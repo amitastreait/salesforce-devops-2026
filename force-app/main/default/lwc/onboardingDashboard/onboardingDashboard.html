@@ -1,0 +1,190 @@
+<template>
+    <div class="dashboard-wrap">
+
+        <!-- ── Header ──────────────────────────────────────────────────── -->
+        <div class="dash-header">
+            <div class="dash-title">
+                <lightning-icon icon-name="standard:work_queue" size="small"></lightning-icon>
+                <h1 class="slds-m-left_x-small">Onboarding Dashboard</h1>
+            </div>
+            <lightning-button-icon
+                icon-name="utility:refresh"
+                variant="border-filled"
+                alternative-text="Refresh"
+                title="Refresh data"
+                onclick={handleRefresh}>
+            </lightning-button-icon>
+        </div>
+
+        <!-- ── Stats Bar ────────────────────────────────────────────────── -->
+        <template if:false={isLoading}>
+            <div class="stats-row">
+                <div class="stat-tile">
+                    <span class="stat-num">{summaryStats.total}</span>
+                    <span class="stat-lbl">Total</span>
+                </div>
+                <div class="stat-tile tile-new">
+                    <span class="stat-num">{summaryStats.new}</span>
+                    <span class="stat-lbl">New</span>
+                </div>
+                <div class="stat-tile tile-progress">
+                    <span class="stat-num">{summaryStats.inProgress}</span>
+                    <span class="stat-lbl">In Progress</span>
+                </div>
+                <div class="stat-tile tile-done">
+                    <span class="stat-num">{summaryStats.completed}</span>
+                    <span class="stat-lbl">Completed</span>
+                </div>
+                <div class="stat-tile tile-cancel">
+                    <span class="stat-num">{summaryStats.cancelled}</span>
+                    <span class="stat-lbl">Cancelled</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- ── Filters ──────────────────────────────────────────────────── -->
+        <div class="filters-bar">
+            <div class="filter-field">
+                <lightning-combobox
+                    label="Status"
+                    variant="label-hidden"
+                    placeholder="All Statuses"
+                    value={selectedStatus}
+                    options={statusOptions}
+                    onchange={handleStatusFilter}>
+                </lightning-combobox>
+            </div>
+            <div class="filter-field">
+                <lightning-combobox
+                    label="Department"
+                    variant="label-hidden"
+                    placeholder="All Departments"
+                    value={selectedDepartment}
+                    options={deptOptions}
+                    onchange={handleDepartmentFilter}>
+                </lightning-combobox>
+            </div>
+            <span class="filter-count">{filteredCount} record(s)</span>
+        </div>
+
+        <!-- ── Loading ──────────────────────────────────────────────────── -->
+        <template if:true={isLoading}>
+            <div class="center-pad">
+                <lightning-spinner alternative-text="Loading…" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- ── Error ────────────────────────────────────────────────────── -->
+        <template if:true={error}>
+            <div class="error-bar" role="alert">
+                <lightning-icon icon-name="utility:error" size="x-small" variant="error"
+                    class="slds-m-right_x-small"></lightning-icon>
+                {error}
+            </div>
+        </template>
+
+        <!-- ── Empty ────────────────────────────────────────────────────── -->
+        <template if:true={isEmpty}>
+            <div class="empty-pane">
+                <lightning-icon icon-name="utility:search" size="large"
+                    class="slds-m-bottom_small"></lightning-icon>
+                <p class="empty-heading">No requests found</p>
+                <p class="empty-sub">Try adjusting your filters.</p>
+            </div>
+        </template>
+
+        <!-- ── Cards Grid ───────────────────────────────────────────────── -->
+        <template if:false={isLoading}>
+            <template if:true={hasRecords}>
+                <div class="cards-grid">
+                    <template for:each={filteredRequests} for:item="req">
+                        <div key={req.Id} class="req-card">
+
+                            <!-- Card Top: click to open record -->
+                            <div class="card-top" data-id={req.Id} onclick={handleRowClick}>
+                                <div class="card-row-1">
+                                    <div class="emp-name">
+                                        <lightning-icon icon-name="standard:employee"
+                                            size="x-small"
+                                            class="slds-m-right_xx-small">
+                                        </lightning-icon>
+                                        {req.Employee_Name__c}
+                                    </div>
+                                    <span class={req.statusClass}>{req.Status__c}</span>
+                                </div>
+                                <div class="card-row-2">
+                                    <span class="dept-chip">{req.Department__c}</span>
+                                    <span class="meta-item">
+                                        <lightning-icon icon-name="utility:date_input"
+                                            size="xx-small"
+                                            class="slds-m-right_xx-small">
+                                        </lightning-icon>
+                                        {req.Start_Date__c}
+                                    </span>
+                                    <span class="meta-item">
+                                        <lightning-icon icon-name="utility:user"
+                                            size="xx-small"
+                                            class="slds-m-right_xx-small">
+                                        </lightning-icon>
+                                        {req.assignedHRName}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Progress -->
+                            <div class="card-progress">
+                                <div class="prog-label">
+                                    <span>Progress</span>
+                                    <span class="prog-pct">{req.Completion_Percentage__c}%</span>
+                                </div>
+                                <lightning-progress-bar
+                                    value={req.Completion_Percentage__c}
+                                    size="medium"
+                                    variant={req.progressVariant}>
+                                </lightning-progress-bar>
+                                <div class="prog-sub">{req.completedCount} of {req.taskCount} tasks done</div>
+                            </div>
+
+                            <!-- Tasks Toggle -->
+                            <div class="tasks-toggle" data-id={req.Id} onclick={handleToggleTasks}>
+                                <lightning-icon
+                                    icon-name={req.toggleIcon}
+                                    size="xx-small"
+                                    class="slds-m-right_xx-small">
+                                </lightning-icon>
+                                Tasks ({req.taskCount})
+                            </div>
+
+                            <!-- Tasks List -->
+                            <template if:true={req.isExpanded}>
+                                <ul class="task-list">
+                                    <template for:each={req.tasks} for:item="task">
+                                        <li key={task.Id} class={task.taskClass}>
+                                            <lightning-icon
+                                                icon-name={task.taskIcon}
+                                                size="xx-small"
+                                                variant={task.iconVariant}
+                                                class="slds-m-right_x-small task-icon">
+                                            </lightning-icon>
+                                            <div class="task-body">
+                                                <span class="task-name">{task.Name}</span>
+                                                <span class="task-meta">
+                                                    <span class="cat-chip">{task.Category__c}</span>
+                                                    <template if:true={task.Due_Date__c}>
+                                                        <span class="due-date">Due {task.Due_Date__c}</span>
+                                                    </template>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+
+    </div>
+</template>

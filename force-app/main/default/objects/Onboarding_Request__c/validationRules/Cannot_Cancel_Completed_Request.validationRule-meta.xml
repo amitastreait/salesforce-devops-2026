@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cannot_Cancel_Completed_Request</fullName>
+    <active>true</active>
+    <description>Prevents users from cancelling an Onboarding Request that has already been marked as Completed.</description>
+    <errorConditionFormula>AND(
+    ISCHANGED(Status__c),
+    ISPICKVAL(Status__c, &quot;Cancelled&quot;),
+    ISPICKVAL(PRIORVALUE(Status__c), &quot;Completed&quot;)
+)</errorConditionFormula>
+    <errorDisplayField>Status__c</errorDisplayField>
+    <errorMessage>A Completed onboarding request cannot be cancelled.</errorMessage>
+</ValidationRule>

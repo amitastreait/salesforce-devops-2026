@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+	<types>
+		<members>*</members>
+		<name>ApprovalProcess</name>
+	</types>
+	<types>
+		<members>New_Onboarding_Request</members>
+		<members>New_Onboarding_Request_Tab</members>
+		<members>Onboarding_Dashboard</members>
+		<members>Onboarding_Dashboard_Tab</members>
+		<members>Onboarding_Request__c</members>
+		<members>Onboarding_Task__c</members>
+		<name>CustomTab</name>
+	</types>
+	<types>
+		<members>New_Onboarding_Request_Page</members>
+		<members>Onboarding_Dashboard_Page</members>
+		<members>Onboarding_Request_Record_Page</members>
+		<name>FlexiPage</name>
+	</types>
+	<types>
+		<members>New_Hire_Onboarding_Wizard</members>
+		<members>Onboarding_Completion_Notification</members>
+		<members>Onboarding_Request_Approval_Process</members>
+		<members>Submit_Onboarding_Request_for_Approval</members>
+		<members>Update_the_Onboarding_Request_Status</members>
+		<name>Flow</name>
+	</types>
+	<types>
+		<members>*</members>
+		<name>Group</name>
+	</types>
+	<types>
+		<members>Onboarding_Request__c-Onboarding Request Layout</members>
+		<members>Onboarding_Task__c-Onboarding Task Layout</members>
+		<name>Layout</name>
+	</types>
+	<types>
+		<members>*</members>
+		<name>Queue</name>
+	</types>
+	<version>66.0</version>
+</Package>

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <apiVersion>65.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <constants>
+        <description>Stores the value for the status of a step that&apos;s been approved. The value of the constant must be Approve.</description>
+        <name>Approved</name>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>Approve</stringValue>
+        </value>
+    </constants>
+    <decisions>
+        <description>Determines whether the approval submission was approved or rejected. If you have final actions to complete when a submission is approved, add one or more background steps to the Process Approved Submission stage. If you have final actions to complete when a submission is rejected, add one or more background steps to the Process Rejected Submission stage. Lastly, update this description to reflect what this decision does.</description>
+        <name>Is_Submission_Approved_or_Rejected</name>
+        <label>Is Submission Approved or Rejected?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Process_Rejected_Submission</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Rejected (Default)</defaultConnectorLabel>
+        <rules>
+            <name>Is_Approved</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Submit_to_the_Running_User.Outputs.approvalDecision</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>Approved</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Process_Approved_Submission</targetReference>
+            </connector>
+            <label>Approved</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <interviewLabel>Onboarding Request Approval Process {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Onboarding Request Approval Process</label>
+    <orchestratedStages>
+        <description>If your approval submission has approval work items that can be concurrently reviewed by different approvers, add more approval steps to this stage. If you have other processing to do, add background steps. Lastly, update the label, API name, and description to reflect what this stage does.</description>
+        <name>Approval_Stage_1</name>
+        <label>Approval Stage 1</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Is_Submission_Approved_or_Rejected</targetReference>
+        </connector>
+        <exitConditionLogic>and</exitConditionLogic>
+        <stageSteps>
+            <description>Select an approver to complete the step. If you have a custom screen flow to call for this approval step, for Action, remove Approvals Workflow: Evaluate Approval Requests, and select your custom screen flow.  Lastly, update the label, API name, and description to reflect what this step does.</description>
+            <name>Submit_to_the_Running_User</name>
+            <actionName>standard_approvals__EvaluateApproval</actionName>
+            <actionType>stepApproval</actionType>
+            <assignees>
+                <assignee>
+                    <stringValue>HR_Approvals</stringValue>
+                </assignee>
+                <assigneeType>Group</assigneeType>
+            </assignees>
+            <canAssigneeEdit>true</canAssigneeEdit>
+            <debugSimulateStep>false</debugSimulateStep>
+            <entryConditionLogic>and</entryConditionLogic>
+            <exitConditionLogic>and</exitConditionLogic>
+            <inputParameters>
+                <name>ActionInput__RecordId</name>
+                <value>
+                    <elementReference>recordId</elementReference>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>ActionInput__CustomEmailSubject</name>
+            </inputParameters>
+            <inputParameters>
+                <name>ActionInput__CustomEmailBody</name>
+            </inputParameters>
+            <label>Submit to the Running User</label>
+            <outputConfigParams>
+                <name>approvalComments</name>
+                <value xsi:nil="true"/>
+            </outputConfigParams>
+            <outputConfigParams>
+                <name>approvalDecision</name>
+                <value xsi:nil="true"/>
+            </outputConfigParams>
+            <requiresAsyncProcessing>false</requiresAsyncProcessing>
+            <runAsUser>false</runAsUser>
+            <shouldLock>true</shouldLock>
+            <stepSubtype>ApprovalStep</stepSubtype>
+        </stageSteps>
+    </orchestratedStages>
+    <orchestratedStages>
+        <description>Contains the final actions to execute when an approval submission is approved. If Send Approval Submission Status Email Notifications to Submitters is enabled, the person who submitted the approval is automatically notified that their submission has been approved. If you have actions to complete when this submission is approved, add one or more background steps to this stage. Lastly, update this description to reflect what this stage does.</description>
+        <name>Process_Approved_Submission</name>
+        <label>Process the Approved Submission</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <exitConditionLogic>and</exitConditionLogic>
+        <stageSteps>
+            <name>Background_Step_1_of_Process_Approved_Submission</name>
+            <actionName>Update_the_Onboarding_Request_Status</actionName>
+            <actionType>stepBackground</actionType>
+            <canAssigneeEdit>false</canAssigneeEdit>
+            <debugSimulateStep>false</debugSimulateStep>
+            <entryConditionLogic>and</entryConditionLogic>
+            <exitConditionLogic>and</exitConditionLogic>
+            <inputParameters>
+                <name>recordId</name>
+                <value>
+                    <elementReference>recordId</elementReference>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>status</name>
+                <value>
+                    <stringValue>In Progress</stringValue>
+                </value>
+            </inputParameters>
+            <label>Background Step 1 of Process the Approved Submission</label>
+            <requiresAsyncProcessing>false</requiresAsyncProcessing>
+            <runAsUser>false</runAsUser>
+            <shouldLock>false</shouldLock>
+            <stepSubtype>BackgroundStep</stepSubtype>
+        </stageSteps>
+    </orchestratedStages>
+    <orchestratedStages>
+        <description>Contains the final actions to execute when an approval submission is rejected. If Send Approval Submission Status Email Notifications to Submitters is enabled, the person who submitted the approval is automatically notified that their submission has been rejected. If you have actions to complete when this submission is rejected, add one or more background steps to this stage. Lastly, update this description to reflect what this stage does.</description>
+        <name>Process_Rejected_Submission</name>
+        <label>Process the Rejected Submission</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <exitConditionLogic>and</exitConditionLogic>
+        <stageSteps>
+            <name>Background_Step_1_of_Process_Rejected_Submission</name>
+            <actionName>Update_the_Onboarding_Request_Status</actionName>
+            <actionType>stepBackground</actionType>
+            <canAssigneeEdit>false</canAssigneeEdit>
+            <debugSimulateStep>false</debugSimulateStep>
+            <entryConditionLogic>and</entryConditionLogic>
+            <exitConditionLogic>and</exitConditionLogic>
+            <inputParameters>
+                <name>recordId</name>
+                <value>
+                    <elementReference>recordId</elementReference>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>status</name>
+                <value>
+                    <stringValue>Cancelled</stringValue>
+                </value>
+            </inputParameters>
+            <label>Background Step 1 of Process the Rejected Submission</label>
+            <requiresAsyncProcessing>false</requiresAsyncProcessing>
+            <runAsUser>false</runAsUser>
+            <shouldLock>false</shouldLock>
+            <stepSubtype>BackgroundStep</stepSubtype>
+        </stageSteps>
+    </orchestratedStages>
+    <orchestratedStages>
+        <description>Contains the steps to run after the person who submitted an approval recalls their approval submission. The recall path stage runs after the in-progress stage and its related steps are canceled and the open approval work items are terminated. Add and configure one or more background steps to this stage and then update this description to reflect what this stage does.</description>
+        <name>Recall_Path_Stage</name>
+        <label>Recall Path Stage</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <exitConditionLogic>and</exitConditionLogic>
+        <stageSteps>
+            <name>Cancel</name>
+            <actionName>Update_the_Onboarding_Request_Status</actionName>
+            <actionType>stepBackground</actionType>
+            <canAssigneeEdit>false</canAssigneeEdit>
+            <debugSimulateStep>false</debugSimulateStep>
+            <entryConditionLogic>and</entryConditionLogic>
+            <exitConditionLogic>and</exitConditionLogic>
+            <inputParameters>
+                <name>recordId</name>
+                <value>
+                    <elementReference>recordId</elementReference>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>status</name>
+                <value>
+                    <stringValue>Cancelled</stringValue>
+                </value>
+            </inputParameters>
+            <label>Cancel</label>
+            <requiresAsyncProcessing>false</requiresAsyncProcessing>
+            <runAsUser>false</runAsUser>
+            <shouldLock>false</shouldLock>
+            <stepSubtype>BackgroundStep</stepSubtype>
+        </stageSteps>
+    </orchestratedStages>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>ApprovalWorkflow</processType>
+    <runInMode>SystemModeWithoutSharing</runInMode>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Approval_Stage_1</targetReference>
+        </connector>
+        <scheduledPaths>
+            <connector>
+                <targetReference>Recall_Path_Stage</targetReference>
+            </connector>
+            <pathType>ApprovalRecall</pathType>
+        </scheduledPaths>
+    </start>
+    <status>Active</status>
+    <variables>
+        <description>Stores the username of an approver selected for the flow approval process and is passed into the flow approval process. This is a required input variable in API version 66.0 and later.</description>
+        <name>firstApprover</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Stores the ID of the record to be approved and is passed into the flow approval process. This is a required input variable.</description>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Stores comments about the approval and is passed into the flow approval process. This is a required input variable.</description>
+        <name>submissionComments</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Stores the ID of the user submitting the approval and is passed into the flow approval process. This is a required input variable.</description>
+        <name>submitter</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

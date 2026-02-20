@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>View</actionName>
+        <comment>Action override created by Lightning App Builder during activation.</comment>
+        <content>Onboarding_Request_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+        <pageOrSobjectType>Onboarding_Request__c</pageOrSobjectType>
+    </actionOverrides>
+    <defaultLandingTab>Onboarding_Dashboard_Tab</defaultLandingTab>
+    <description>Employee Onboarding Tracker — manage new hire requests, tasks, and progress from a single app.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Onboarding Tracker</label>
+    <navType>Standard</navType>
+    <tabs>Onboarding_Dashboard_Tab</tabs>
+    <tabs>Onboarding_Dashboard</tabs>
+    <tabs>New_Onboarding_Request</tabs>
+    <tabs>New_Onboarding_Request_Tab</tabs>
+    <tabs>Onboarding_Request__c</tabs>
+    <tabs>Onboarding_Task__c</tabs>
+    <tabs>standard-report</tabs>
+    <tabs>standard-Dashboard</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

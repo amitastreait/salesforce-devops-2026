@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Onboarding_Request__c</fullName>
+    <label>Onboarding Request</label>
+    <referenceTo>Onboarding_Request__c</referenceTo>
+    <relationshipLabel>Onboarding Tasks</relationshipLabel>
+    <relationshipName>Onboarding_Tasks</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>

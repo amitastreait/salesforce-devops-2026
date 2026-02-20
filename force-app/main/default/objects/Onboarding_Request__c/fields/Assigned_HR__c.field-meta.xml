@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Assigned_HR__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Assigned HR</label>
+    <referenceTo>User</referenceTo>
+    <relationshipName>Onboarding_Requests</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

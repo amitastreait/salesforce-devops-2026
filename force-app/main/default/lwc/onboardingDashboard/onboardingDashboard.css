@@ -1,0 +1,290 @@
+/* ─── Dashboard Wrapper ────────────────────────────────────────────────── */
+.dashboard-wrap {
+    padding: 1rem;
+    background: #f3f5f8;
+    min-height: 100%;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────── */
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+.dash-title {
+    display: flex;
+    align-items: center;
+}
+.dash-title h1 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #032d60;
+    margin: 0;
+}
+
+/* ─── Stats Row ────────────────────────────────────────────────────────── */
+.stats-row {
+    display: flex;
+    gap: 0.875rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+.stat-tile {
+    flex: 1;
+    min-width: 72px;
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 0.875rem 0.75rem;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    border-top: 4px solid #dddbda;
+}
+.tile-new      { border-top-color: #1b96ff; }
+.tile-progress { border-top-color: #f4bc25; }
+.tile-done     { border-top-color: #2e844a; }
+.tile-cancel   { border-top-color: #ba0517; }
+.stat-num {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #032d60;
+    line-height: 1;
+}
+.stat-lbl {
+    display: block;
+    font-size: 0.7rem;
+    color: #706e6b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.3rem;
+}
+
+/* ─── Filters Bar ──────────────────────────────────────────────────────── */
+.filters-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 1.25rem;
+}
+.filter-field {
+    min-width: 160px;
+}
+.filter-count {
+    margin-left: auto;
+    font-size: 0.8125rem;
+    color: #706e6b;
+    align-self: center;
+}
+
+/* ─── Loading / Error / Empty ──────────────────────────────────────────── */
+.center-pad {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+}
+.error-bar {
+    display: flex;
+    align-items: center;
+    background: #fef1ee;
+    border-left: 4px solid #ba0517;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #ba0517;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+.empty-pane {
+    background: #fff;
+    border-radius: 0.875rem;
+    text-align: center;
+    padding: 3.5rem 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.empty-heading {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #032d60;
+    margin: 0.75rem 0 0.25rem;
+}
+.empty-sub {
+    color: #706e6b;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* ─── Cards Grid ───────────────────────────────────────────────────────── */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1rem;
+}
+
+/* ─── Individual Card ──────────────────────────────────────────────────── */
+.req-card {
+    background: #fff;
+    border-radius: 0.875rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    overflow: hidden;
+    transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.req-card:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+/* Card Top (clickable) */
+.card-top {
+    padding: 1rem 1rem 0.75rem;
+    cursor: pointer;
+}
+.card-row-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+.emp-name {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #032d60;
+}
+.card-row-2 {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+}
+.dept-chip {
+    background: #e8f4fd;
+    color: #0176d3;
+    border-radius: 1rem;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.meta-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.78rem;
+    color: #706e6b;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 0.2rem 0.7rem;
+    border-radius: 1rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.s-new      { background: #e8f4fd; color: #0176d3; }
+.s-progress { background: #fef9e7; color: #a87900; }
+.s-done     { background: #ebf7ee; color: #2e844a; }
+.s-cancel   { background: #fef1ee; color: #ba0517; }
+
+/* Progress Section */
+.card-progress {
+    padding: 0 1rem 0.875rem;
+    border-top: 1px solid #f3f3f3;
+}
+.prog-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #706e6b;
+    margin: 0.625rem 0 0.25rem;
+}
+.prog-pct {
+    font-weight: 600;
+    color: #032d60;
+}
+.prog-sub {
+    font-size: 0.72rem;
+    color: #aeaeae;
+    text-align: right;
+    margin-top: 0.2rem;
+}
+
+/* Tasks Toggle */
+.tasks-toggle {
+    display: flex;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    background: #f8f9fb;
+    border-top: 1px solid #e8e8e8;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #3e3e3c;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+.tasks-toggle:hover {
+    background: #ddeeff;
+    color: #0176d3;
+}
+
+/* Task List */
+.task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.375rem 0;
+    border-top: 1px solid #f0f0f0;
+}
+.task-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #f8f8f8;
+}
+.task-item:last-child {
+    border-bottom: none;
+}
+.task-item.done {
+    opacity: 0.6;
+}
+.task-icon {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+.task-body {
+    display: flex;
+    flex-direction: column;
+}
+.task-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #032d60;
+}
+.task-item.done .task-name {
+    text-decoration: line-through;
+    color: #706e6b;
+}
+.task-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+}
+.cat-chip {
+    background: #f3f3f3;
+    border-radius: 0.25rem;
+    padding: 0.05rem 0.35rem;
+    font-size: 0.7rem;
+    color: #706e6b;
+}
+.due-date {
+    font-size: 0.7rem;
+    color: #aeaeae;
+}

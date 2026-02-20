@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Start_Date_Must_Be_Future</fullName>
+    <active>true</active>
+    <description>Ensures that the Start Date is always set to a future date when creating a new Onboarding Request.</description>
+    <errorConditionFormula>AND(ISNEW(), Start_Date__c &lt;= TODAY())</errorConditionFormula>
+    <errorDisplayField>Start_Date__c</errorDisplayField>
+    <errorMessage>Start Date must be a future date.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,165 @@
+<template>
+    <div class="page-wrap">
+
+        <!-- ── Success Screen ──────────────────────────────────────────── -->
+        <template if:true={isSuccess}>
+            <div class="success-screen">
+                <div class="success-icon-wrap">
+                    <lightning-icon icon-name="utility:check" size="large" variant="inverse"></lightning-icon>
+                </div>
+                <h2 class="success-title">Onboarding Request Created!</h2>
+                <p class="success-sub">
+                    <strong>{createdEmployeeName}</strong> has been added to the onboarding queue.
+                </p>
+
+                <div class="tasks-created-row">
+                    <template for:each={autoTaskList} for:item="t">
+                        <div key={t.label} class="task-created-badge">
+                            <lightning-icon icon-name={t.icon} size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                            {t.label}
+                        </div>
+                    </template>
+                </div>
+
+                <div class="success-actions">
+                    <lightning-button
+                        label="View Record"
+                        variant="brand"
+                        onclick={handleViewRecord}>
+                    </lightning-button>
+                    <lightning-button
+                        label="Create Another"
+                        variant="neutral"
+                        onclick={handleCreateAnother}
+                        class="slds-m-left_small">
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ── Form ───────────────────────────────────────────────────── -->
+        <template if:false={isSuccess}>
+            <div class="form-card">
+
+                <!-- Header -->
+                <div class="form-header">
+                    <div class="header-icon">
+                        <lightning-icon icon-name="standard:user" size="medium" variant="inverse"></lightning-icon>
+                    </div>
+                    <div class="header-text">
+                        <h1 class="header-title">New Hire Onboarding Request</h1>
+                        <p class="header-sub">Fill in the details below. 4 onboarding tasks will be auto-created on save.</p>
+                    </div>
+                </div>
+
+                <!-- Error Banner -->
+                <template if:true={errorMessage}>
+                    <div class="error-bar" role="alert">
+                        <lightning-icon icon-name="utility:error" size="x-small" variant="error"
+                            class="slds-m-right_x-small"></lightning-icon>
+                        {errorMessage}
+                    </div>
+                </template>
+
+                <div class="form-body">
+
+                    <!-- Employee Name -->
+                    <div class="field-group">
+                        <label class="field-label">
+                            Employee Name <span class="required-star">*</span>
+                        </label>
+                        <lightning-input
+                            label="Employee Name"
+                            variant="label-hidden"
+                            placeholder="e.g. Jane Doe"
+                            value={employeeName}
+                            onchange={handleNameChange}>
+                        </lightning-input>
+                    </div>
+
+                    <!-- Department Tiles -->
+                    <div class="field-group">
+                        <label class="field-label">
+                            Department <span class="required-star">*</span>
+                        </label>
+                        <div class="dept-grid">
+                            <template for:each={departmentOptions} for:item="opt">
+                                <div key={opt.value}
+                                    class={opt.tileClass}
+                                    data-value={opt.value}
+                                    onclick={handleDeptSelect}>
+                                    <lightning-icon
+                                        icon-name={opt.icon}
+                                        size="small"
+                                        class="dept-icon">
+                                    </lightning-icon>
+                                    <span class="dept-label">{opt.label}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="field-group field-half">
+                        <label class="field-label">
+                            Start Date <span class="required-star">*</span>
+                        </label>
+                        <lightning-input
+                            type="date"
+                            label="Start Date"
+                            variant="label-hidden"
+                            value={startDate}
+                            min={minDate}
+                            onchange={handleDateChange}>
+                        </lightning-input>
+                    </div>
+
+                    <!-- Auto-Tasks Preview -->
+                    <div class="preview-strip">
+                        <p class="preview-label">
+                            <lightning-icon icon-name="utility:knowledge_base" size="xx-small"
+                                class="slds-m-right_xx-small"></lightning-icon>
+                            Auto-generated on save:
+                        </p>
+                        <div class="preview-tasks">
+                            <template for:each={autoTaskList} for:item="t">
+                                <div key={t.label} class="preview-task">
+                                    <lightning-icon icon-name={t.icon} size="xx-small"
+                                        class="slds-m-right_xx-small"></lightning-icon>
+                                    {t.label}
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-footer">
+                        <lightning-button
+                            label="Reset"
+                            variant="neutral"
+                            onclick={handleReset}
+                            disabled={isLoading}>
+                        </lightning-button>
+                        <lightning-button
+                            label="Create Onboarding Request"
+                            variant="brand"
+                            onclick={handleSubmit}
+                            disabled={isLoading}>
+                        </lightning-button>
+                    </div>
+
+                </div>
+
+                <!-- Loading Overlay -->
+                <template if:true={isLoading}>
+                    <div class="loading-overlay">
+                        <lightning-spinner alternative-text="Creating request…" size="medium"></lightning-spinner>
+                        <p class="loading-text">Creating request and tasks…</p>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+    </div>
+</template>

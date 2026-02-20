@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sf project deploy start:*)",
+      "Bash(sf project deploy report:*)",
+      "Bash(sf org list metadata:*)",
+      "Bash(sf project retrieve start:*)",
+      "Bash(sf data query:*)",
+      "Bash(sf apex run test:*)"
+    ]
+  }
+}

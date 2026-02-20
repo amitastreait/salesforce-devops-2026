@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Completed_Date_Required_When_Done</fullName>
+    <active>true</active>
+    <description>Requires a Completed Date whenever a task is marked as completed.</description>
+    <errorConditionFormula>AND(Is_Completed__c = TRUE, ISBLANK(Completed_Date__c))</errorConditionFormula>
+    <errorDisplayField>Completed_Date__c</errorDisplayField>
+    <errorMessage>Completed Date is required when a task is marked as completed.</errorMessage>
+</ValidationRule>
