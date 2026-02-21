@@ -393,4 +393,58 @@ private class OnboardingServiceTest {
 
         Assert.isTrue(true, 'Records without Assigned_HR__c should be skipped without exception');
     }
+
+    // ─── completeTask ─────────────────────────────────────────────────────────
+
+    @IsTest
+    static void completeTask_setsIsCompletedAndCompletedDate() {
+        Onboarding_Request__c req = makeRequest('Complete Task Emp', 5);
+        insert req;
+
+        Onboarding_Task__c task = [
+            SELECT Id, Is_Completed__c, Completed_Date__c
+            FROM   Onboarding_Task__c
+            WHERE  Onboarding_Request__c = :req.Id
+            LIMIT  1
+        ];
+        Assert.isFalse(task.Is_Completed__c, 'Task should start incomplete');
+
+        Test.startTest();
+        OnboardingService.completeTask(task.Id);
+        Test.stopTest();
+
+        Onboarding_Task__c updated = [
+            SELECT Is_Completed__c, Completed_Date__c
+            FROM   Onboarding_Task__c
+            WHERE  Id = :task.Id
+        ];
+        Assert.isTrue(updated.Is_Completed__c,        'Is_Completed__c should be true after completeTask');
+        Assert.areEqual(Date.today(), updated.Completed_Date__c, 'Completed_Date__c should be set to today');
+    }
+
+    @IsTest
+    static void completeTask_triggersParentRecalculation() {
+        Onboarding_Request__c req = makeRequest('Recalc Emp', 5);
+        insert req;
+
+        List<Onboarding_Task__c> tasks = [
+            SELECT Id FROM Onboarding_Task__c
+            WHERE  Onboarding_Request__c = :req.Id
+        ];
+
+        Test.startTest();
+        // Complete all tasks via completeTask — parent percentage should reach 100
+        for (Onboarding_Task__c t : tasks) {
+            OnboardingService.completeTask(t.Id);
+        }
+        Test.stopTest();
+
+        Onboarding_Request__c updated = [
+            SELECT Completion_Percentage__c, Status__c
+            FROM   Onboarding_Request__c
+            WHERE  Id = :req.Id
+        ];
+        Assert.areEqual(100, updated.Completion_Percentage__c, 'Completion should be 100% when all tasks done');
+        Assert.areEqual('Completed', updated.Status__c,         'Status should be Completed when all tasks done');
+    }
 }

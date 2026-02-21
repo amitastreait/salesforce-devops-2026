@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>IT Setup</label>
+    <protected>false</protected>
+    <values>
+        <field>Task_Name__c</field>
+        <value xsi:type="xsd:string">Set up laptop &amp; software access</value>
+    </values>
+    <values>
+        <field>Category__c</field>
+        <value xsi:type="xsd:string">IT</value>
+    </values>
+    <values>
+        <field>Days_Offset__c</field>
+        <value xsi:type="xsd:double">-3</value>
+    </values>
+    <values>
+        <field>Department__c</field>
+        <value xsi:nil="true"/>
+    </values>
+</CustomMetadata>

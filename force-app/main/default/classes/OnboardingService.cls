@@ -13,15 +13,26 @@ public with sharing class OnboardingService {
      * @param requests List of newly inserted Onboarding_Request__c records
      */
     public static void createDefaultTasks(List<Onboarding_Request__c> requests) {
+        List<Onboarding_Task_Template__mdt> templates = [
+            SELECT Task_Name__c, Category__c, Days_Offset__c, Department__c
+            FROM   Onboarding_Task_Template__mdt
+            ORDER BY Days_Offset__c ASC NULLS LAST
+        ];
+
+        if (templates.isEmpty()) return;
+
         List<Onboarding_Task__c> tasksToInsert = new List<Onboarding_Task__c>();
 
         for (Onboarding_Request__c req : requests) {
-            Date startDate = req.Start_Date__c;
-
-            tasksToInsert.add(buildTask(req.Id, 'Set up laptop & software access', 'IT',        startDate.addDays(-3)));
-            tasksToInsert.add(buildTask(req.Id, 'Issue employee badge & desk assignment', 'Facilities', startDate.addDays(-2)));
-            tasksToInsert.add(buildTask(req.Id, 'Complete HR paperwork & benefits enrollment', 'HR', startDate.addDays(-1)));
-            tasksToInsert.add(buildTask(req.Id, 'Schedule orientation & compliance training', 'Training', startDate));
+            for (Onboarding_Task_Template__mdt tmpl : templates) {
+                // Skip department-specific templates that don't match this request's department
+                if (String.isNotBlank(tmpl.Department__c) && tmpl.Department__c != req.Department__c) {
+                    continue;
+                }
+                Integer offset = tmpl.Days_Offset__c != null ? Integer.valueOf(tmpl.Days_Offset__c) : 0;
+                tasksToInsert.add(buildTask(req.Id, tmpl.Task_Name__c, tmpl.Category__c,
+                                            req.Start_Date__c.addDays(offset)));
+            }
         }
 
         if (!tasksToInsert.isEmpty()) {
@@ -145,6 +156,25 @@ public with sharing class OnboardingService {
         );
         insert request;
         return request.Id;
+    }
+
+    // ─── Inline Task Completion ───────────────────────────────────────────────
+
+    /**
+     * @description Marks a single Onboarding Task as complete and sets today as
+     *              the Completed_Date__c. Called from the onboardingDashboard LWC
+     *              via inline "Mark Done" button. The existing trigger on
+     *              Onboarding_Task__c will fire and recalculate the parent's
+     *              Completion_Percentage__c and Status__c automatically.
+     * @param taskId Id of the Onboarding_Task__c to mark complete
+     */
+    @AuraEnabled
+    public static void completeTask(Id taskId) {
+        update new Onboarding_Task__c(
+            Id                = taskId,
+            Is_Completed__c   = true,
+            Completed_Date__c = Date.today()
+        );
     }
 
     // ─── Reminder Logic (used by Scheduled Apex) ─────────────────────────────

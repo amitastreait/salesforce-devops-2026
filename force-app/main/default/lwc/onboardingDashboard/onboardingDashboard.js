@@ -1,7 +1,9 @@
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getAllRequestsWithTasks from '@salesforce/apex/OnboardingService.getAllRequestsWithTasks';
+import completeTask from '@salesforce/apex/OnboardingService.completeTask';
 
 const DEPT_OPTIONS = [
     { label: 'All Departments', value: 'ALL'       },
@@ -32,6 +34,7 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
     @track selectedDepartment = 'ALL';
     @track selectedStatus     = 'ALL';
     @track expandedCards      = {};
+    @track completingTaskId   = null;
     @track error;
 
     wiredResult;
@@ -66,9 +69,10 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
             const pct   = req.Completion_Percentage__c ?? 0;
             const tasks = (req.Onboarding_Tasks__r || []).map(t => ({
                 ...t,
-                taskIcon  : t.Is_Completed__c ? 'utility:check'  : 'utility:clock',
-                iconVariant: t.Is_Completed__c ? 'success'        : 'warning',
-                taskClass : t.Is_Completed__c ? 'task-item done' : 'task-item'
+                taskIcon    : t.Is_Completed__c ? 'utility:check'  : 'utility:clock',
+                iconVariant : t.Is_Completed__c ? 'success'        : 'warning',
+                taskClass   : t.Is_Completed__c ? 'task-item done' : 'task-item',
+                isCompleting: this.completingTaskId === t.Id
             }));
             return {
                 ...req,
@@ -137,6 +141,28 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
                 type: 'standard__recordPage',
                 attributes: { recordId, actionName: 'view' }
             });
+        }
+    }
+
+    async handleCompleteTask(event) {
+        const taskId = event.currentTarget.dataset.id;
+        this.completingTaskId = taskId;
+        try {
+            await completeTask({ taskId });
+            await refreshApex(this.wiredResult);
+            this.dispatchEvent(new ShowToastEvent({
+                title  : 'Task Complete',
+                message: 'Task marked as done.',
+                variant: 'success'
+            }));
+        } catch (err) {
+            this.dispatchEvent(new ShowToastEvent({
+                title  : 'Error',
+                message: err?.body?.message || 'Could not complete task.',
+                variant: 'error'
+            }));
+        } finally {
+            this.completingTaskId = null;
         }
     }
 

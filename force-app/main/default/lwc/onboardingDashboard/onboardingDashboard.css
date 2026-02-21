@@ -288,3 +288,32 @@
     font-size: 0.7rem;
     color: #aeaeae;
 }
+
+/* ─── Inline Complete Button ────────────────────────────────────────────── */
+.complete-btn {
+    flex-shrink: 0;
+    margin-left: auto;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1.5px solid #2e844a;
+    background: transparent;
+    color: #2e844a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+}
+.complete-btn:hover:not(:disabled) {
+    background: #2e844a;
+    color: #fff;
+}
+.complete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -175,6 +175,24 @@
                                                     </template>
                                                 </span>
                                             </div>
+                                            <template if:false={task.Is_Completed__c}>
+                                                <button
+                                                    class="complete-btn"
+                                                    data-id={task.Id}
+                                                    onclick={handleCompleteTask}
+                                                    disabled={task.isCompleting}
+                                                    title="Mark as complete">
+                                                    <template if:true={task.isCompleting}>
+                                                        <lightning-spinner
+                                                            size="xx-small"
+                                                            alternative-text="Saving...">
+                                                        </lightning-spinner>
+                                                    </template>
+                                                    <template if:false={task.isCompleting}>
+                                                        ✓
+                                                    </template>
+                                                </button>
+                                            </template>
                                         </li>
                                     </template>
                                 </ul>

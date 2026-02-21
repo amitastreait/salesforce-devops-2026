@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Platform event published in the source org when an order is created or updated. Subscribed to by subscriber.js via CometD, which writes each received payload to Integration_Log__c in this org.</description>
+    <eventType>StandardVolume</eventType>
+    <label>Order Event</label>
+    <pluralLabel>Order Events</pluralLabel>
+    <publishBehavior>PublishAfterCommit</publishBehavior>
+</CustomObject>

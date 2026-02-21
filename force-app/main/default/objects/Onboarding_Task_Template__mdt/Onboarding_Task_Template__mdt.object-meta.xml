@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Template records that define default onboarding tasks. Queried at runtime to auto-generate tasks when a new Onboarding Request is created. Replaces hardcoded task logic in OnboardingService.</description>
+    <label>Onboarding Task Template</label>
+    <pluralLabel>Onboarding Task Templates</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>
