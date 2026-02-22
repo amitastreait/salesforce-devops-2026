@@ -50,6 +50,63 @@ const WORK_MODES = [
     { label: 'Remote',  value: 'Remote'  }
 ];
 
+// ── Demo Prefill Helpers ──────────────────────────────────────────────────────
+
+const DEMO_JOB_TITLES = [
+    'Software Engineer', 'Senior Software Engineer', 'Product Manager',
+    'UX Designer', 'Data Analyst', 'Data Engineer', 'Marketing Specialist',
+    'Sales Executive', 'HR Business Partner', 'Financial Analyst',
+    'Operations Manager', 'DevOps Engineer', 'Customer Success Manager',
+    'Business Analyst', 'Solutions Architect', 'Scrum Master'
+];
+
+// Maps lower-cased city/state values from randomuser.me → our Location picklist
+const CITY_TO_LOCATION = {
+    'new york'     : 'New York',
+    'brooklyn'     : 'New York',
+    'manhattan'    : 'New York',
+    'buffalo'      : 'New York',
+    'san francisco': 'San Francisco',
+    'san jose'     : 'San Francisco',
+    'oakland'      : 'San Francisco',
+    'los angeles'  : 'San Francisco',  // nearest match
+    'austin'       : 'Austin',
+    'chicago'      : 'Chicago',
+    'toronto'      : 'Toronto',
+    'london'       : 'London',
+    'manchester'   : 'London',
+    'birmingham'   : 'London'
+};
+
+const RANDOMUSER_API = 'https://randomuser.me/api/?nat=us,gb,ca&inc=name,email,phone,location,dob';
+
+function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function ageToExperience(age) {
+    if (age < 23) return '0-1 Years';
+    if (age < 26) return '1-3 Years';
+    if (age < 31) return '3-5 Years';
+    if (age < 42) return '5-10 Years';
+    return '10+ Years';
+}
+
+function cityToLocation(city, country) {
+    const key = (city || '').toLowerCase();
+    if (CITY_TO_LOCATION[key]) return CITY_TO_LOCATION[key];
+    // Country fallback
+    if ((country || '').toLowerCase().includes('canada')) return 'Toronto';
+    if ((country || '').toLowerCase().includes('united kingdom')) return 'London';
+    return pickRandom(LOCATIONS).value;
+}
+
+function futureDateStr(minDays, maxDays) {
+    const d = new Date();
+    d.setDate(d.getDate() + minDays + Math.floor(Math.random() * (maxDays - minDays + 1)));
+    return d.toISOString().split('T')[0];
+}
+
 export default class OnboardingRequestForm extends NavigationMixin(LightningElement) {
 
     // ── Employee Details ──────────────────────────────────────────────────────
@@ -74,6 +131,7 @@ export default class OnboardingRequestForm extends NavigationMixin(LightningElem
 
     // ── UI State ──────────────────────────────────────────────────────────────
     @track isLoading           = false;
+    @track prefillLoading      = false;
     @track errorMessage        = '';
     @track isSuccess           = false;
     @track createdEmployeeName = '';
@@ -154,6 +212,36 @@ export default class OnboardingRequestForm extends NavigationMixin(LightningElem
                 type       : 'standard__recordPage',
                 attributes : { recordId: this._createdRecordId, actionName: 'view' }
             });
+        }
+    }
+
+    // ── Demo Prefill ──────────────────────────────────────────────────────────
+
+    async handlePrefill() {
+        this.prefillLoading = true;
+        this.errorMessage   = '';
+        try {
+            const resp = await fetch(RANDOMUSER_API);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            const u    = data.results[0];
+
+            this.employeeName   = `${u.name.first} ${u.name.last}`;
+            this.personalEmail  = u.email;
+            this.phone          = u.phone;
+            this.jobTitle       = pickRandom(DEMO_JOB_TITLES);
+            this.department     = pickRandom(DEPARTMENTS).value;
+            this.employmentType = pickRandom(EMPLOYMENT_TYPES).value;
+            this.experience     = ageToExperience(u.dob.age);
+            this.location       = cityToLocation(u.location.city, u.location.country);
+            this.workMode       = pickRandom(WORK_MODES).value;
+            this.startDate      = futureDateStr(10, 45);
+            // reportingManagerId and buddyId require real User IDs — left for manual selection
+        } catch (err) {
+            this.errorMessage =
+                'Could not load demo data. Ensure "randomuser.me" is added to CSP Trusted Sites in Setup.';
+        } finally {
+            this.prefillLoading = false;
         }
     }
 

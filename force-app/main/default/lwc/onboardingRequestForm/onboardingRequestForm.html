@@ -39,6 +39,14 @@
                         <h1 class="header-title">New Hire Onboarding Request</h1>
                         <p class="header-sub">Complete all sections below. Onboarding tasks will be auto-generated on save.</p>
                     </div>
+                    <button class="demo-btn" onclick={handlePrefill} disabled={prefillLoading} title="Fill form with random data from randomuser.me">
+                        <template if:false={prefillLoading}>
+                            ⚡ Demo Fill
+                        </template>
+                        <template if:true={prefillLoading}>
+                            <lightning-spinner size="x-small" variant="inverse" alternative-text="Loading…"></lightning-spinner>
+                        </template>
+                    </button>
                 </div>
 
                 <!-- Error Banner -->

@@ -9,6 +9,14 @@
 		<name>ContentAsset</name>
 	</types>
 	<types>
+		<members>*</members>
+		<name>CorsWhitelistOrigin</name>
+	</types>
+	<types>
+		<members>*</members>
+		<name>CspTrustedSite</name>
+	</types>
+	<types>
 		<members>Onboarding_Tracker</members>
 		<name>CustomApplication</name>
 	</types>
