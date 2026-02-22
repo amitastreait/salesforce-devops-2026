@@ -9,7 +9,7 @@
                 <h1>Onboarding Kanban</h1>
             </div>
             <div class="header-actions">
-                <div class="dept-filter">
+                <div class="k-filter">
                     <lightning-combobox
                         label="Department"
                         variant="label-hidden"
@@ -17,6 +17,26 @@
                         value={selectedDepartment}
                         options={deptOptions}
                         onchange={handleDepartmentFilter}>
+                    </lightning-combobox>
+                </div>
+                <div class="k-filter">
+                    <lightning-combobox
+                        label="Location"
+                        variant="label-hidden"
+                        placeholder="All Locations"
+                        value={selectedLocation}
+                        options={locationOptions}
+                        onchange={handleLocationFilter}>
+                    </lightning-combobox>
+                </div>
+                <div class="k-filter">
+                    <lightning-combobox
+                        label="Work Mode"
+                        variant="label-hidden"
+                        placeholder="All Work Modes"
+                        value={selectedWorkMode}
+                        options={workModeOptions}
+                        onchange={handleWorkModeFilter}>
                     </lightning-combobox>
                 </div>
                 <lightning-button-icon
@@ -70,15 +90,30 @@
                                      ondragend={handleDragEnd}>
 
                                     <div class="k-card-name">{card.Employee_Name__c}</div>
+                                    <template if:true={card.jobTitle}>
+                                        <div class="k-job-title">{card.jobTitle}</div>
+                                    </template>
                                     <div class="k-card-meta">
                                         <span class="k-dept-chip">{card.Department__c}</span>
-                                        <span class="k-hr">
-                                            <lightning-icon icon-name="utility:user"
-                                                size="xx-small"
-                                                class="slds-m-right_xx-small">
-                                            </lightning-icon>
-                                            {card.assignedHRName}
-                                        </span>
+                                        <template if:true={card.workModeText}>
+                                            <span class={card.workModeBadgeClass}>{card.workModeText}</span>
+                                        </template>
+                                        <template if:true={card.locationText}>
+                                            <span class="k-loc-badge">
+                                                <lightning-icon icon-name="utility:location"
+                                                    size="xx-small"
+                                                    class="slds-m-right_xx-small">
+                                                </lightning-icon>
+                                                {card.locationText}
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <div class="k-card-hr">
+                                        <lightning-icon icon-name="utility:user"
+                                            size="xx-small"
+                                            class="slds-m-right_xx-small">
+                                        </lightning-icon>
+                                        {card.assignedHRName}
                                     </div>
                                     <div class="k-progress-row">
                                         <lightning-progress-bar

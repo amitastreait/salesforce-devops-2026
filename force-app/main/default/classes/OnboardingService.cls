@@ -178,7 +178,9 @@ public with sharing class OnboardingService {
         return [
             SELECT Id, Name, Employee_Name__c, Department__c, Status__c,
                    Start_Date__c, Completion_Percentage__c, Assigned_HR__c,
-                   Assigned_HR__r.Name,
+                   Assigned_HR__r.Name, Job_Title__c, Location__c, Work_Mode__c,
+                   Employment_Type__c, Reporting_Manager__c, Reporting_Manager__r.Name,
+                   Buddy__c, Buddy__r.Name,
                    (SELECT Id, Name, Category__c, Due_Date__c,
                            Is_Completed__c, Assigned_To__c, Assigned_To__r.Name
                     FROM   Onboarding_Tasks__r

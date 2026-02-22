@@ -6,12 +6,13 @@ import getAllRequestsWithTasks from '@salesforce/apex/OnboardingService.getAllRe
 import completeTask from '@salesforce/apex/OnboardingService.completeTask';
 
 const DEPT_OPTIONS = [
-    { label: 'All Departments', value: 'ALL'       },
-    { label: 'IT',              value: 'IT'         },
-    { label: 'HR',              value: 'HR'         },
-    { label: 'Finance',         value: 'Finance'    },
-    { label: 'Sales',           value: 'Sales'      },
-    { label: 'Marketing',       value: 'Marketing'  }
+    { label: 'All Departments', value: 'ALL'        },
+    { label: 'IT',              value: 'IT'          },
+    { label: 'HR',              value: 'HR'          },
+    { label: 'Finance',         value: 'Finance'     },
+    { label: 'Sales',           value: 'Sales'       },
+    { label: 'Marketing',       value: 'Marketing'   },
+    { label: 'Operations',      value: 'Operations'  }
 ];
 
 const STATUS_OPTIONS = [
@@ -22,6 +23,24 @@ const STATUS_OPTIONS = [
     { label: 'Cancelled',     value: 'Cancelled'    }
 ];
 
+const LOCATION_OPTIONS = [
+    { label: 'All Locations',  value: 'ALL'           },
+    { label: 'New York',       value: 'New York'       },
+    { label: 'San Francisco',  value: 'San Francisco'  },
+    { label: 'London',         value: 'London'         },
+    { label: 'Austin',         value: 'Austin'         },
+    { label: 'Chicago',        value: 'Chicago'        },
+    { label: 'Toronto',        value: 'Toronto'        },
+    { label: 'Remote',         value: 'Remote'         }
+];
+
+const WORK_MODE_OPTIONS = [
+    { label: 'All Work Modes', value: 'ALL'      },
+    { label: 'On-site',        value: 'On-site'  },
+    { label: 'Hybrid',         value: 'Hybrid'   },
+    { label: 'Remote',         value: 'Remote'   }
+];
+
 const STATUS_CLASS = {
     'New'        : 'status-badge s-new',
     'In Progress': 'status-badge s-progress',
@@ -29,10 +48,19 @@ const STATUS_CLASS = {
     'Cancelled'  : 'status-badge s-cancel'
 };
 
+function workModeBadgeClass(wm) {
+    if (wm === 'On-site') return 'wm-badge wm-onsite';
+    if (wm === 'Hybrid')  return 'wm-badge wm-hybrid';
+    if (wm === 'Remote')  return 'wm-badge wm-remote';
+    return '';
+}
+
 export default class OnboardingDashboard extends NavigationMixin(LightningElement) {
 
     @track selectedDepartment = 'ALL';
     @track selectedStatus     = 'ALL';
+    @track selectedLocation   = 'ALL';
+    @track selectedWorkMode   = 'ALL';
     @track expandedCards      = {};
     @track completingTaskId   = null;
     @track error;
@@ -74,10 +102,17 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
                 taskClass   : t.Is_Completed__c ? 'task-item done' : 'task-item',
                 isCompleting: this.completingTaskId === t.Id
             }));
+            const wm = req.Work_Mode__c || '';
             return {
                 ...req,
                 Completion_Percentage__c : pct,
-                assignedHRName  : req.Assigned_HR__r?.Name || '—',
+                assignedHRName      : req.Assigned_HR__r?.Name        || '—',
+                reportingManagerName: req.Reporting_Manager__r?.Name  || '',
+                buddyName           : req.Buddy__r?.Name              || '',
+                jobTitle            : req.Job_Title__c                 || '',
+                locationText        : req.Location__c                  || '',
+                workModeText        : wm,
+                workModeBadgeClass  : workModeBadgeClass(wm),
                 tasks,
                 taskCount       : tasks.length,
                 completedCount  : tasks.filter(t => t.Is_Completed__c).length,
@@ -93,9 +128,11 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
 
     get filteredRequests() {
         return this.allRequests.filter(r => {
-            const deptOk   = this.selectedDepartment === 'ALL' || r.Department__c === this.selectedDepartment;
-            const statusOk = this.selectedStatus     === 'ALL' || r.Status__c     === this.selectedStatus;
-            return deptOk && statusOk;
+            const deptOk     = this.selectedDepartment === 'ALL' || r.Department__c  === this.selectedDepartment;
+            const statusOk   = this.selectedStatus     === 'ALL' || r.Status__c      === this.selectedStatus;
+            const locationOk = this.selectedLocation   === 'ALL' || r.Location__c    === this.selectedLocation;
+            const workModeOk = this.selectedWorkMode   === 'ALL' || r.Work_Mode__c   === this.selectedWorkMode;
+            return deptOk && statusOk && locationOk && workModeOk;
         });
     }
 
@@ -116,8 +153,10 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
 
     // ── Options ─────────────────────────────────────────────────────────
 
-    get deptOptions()   { return DEPT_OPTIONS;   }
-    get statusOptions() { return STATUS_OPTIONS; }
+    get deptOptions()     { return DEPT_OPTIONS;      }
+    get statusOptions()   { return STATUS_OPTIONS;    }
+    get locationOptions() { return LOCATION_OPTIONS;  }
+    get workModeOptions() { return WORK_MODE_OPTIONS; }
 
     // ── Handlers ─────────────────────────────────────────────────────────
 
@@ -127,6 +166,14 @@ export default class OnboardingDashboard extends NavigationMixin(LightningElemen
 
     handleStatusFilter(event) {
         this.selectedStatus = event.detail.value;
+    }
+
+    handleLocationFilter(event) {
+        this.selectedLocation = event.detail.value;
+    }
+
+    handleWorkModeFilter(event) {
+        this.selectedWorkMode = event.detail.value;
     }
 
     handleToggleTasks(event) {

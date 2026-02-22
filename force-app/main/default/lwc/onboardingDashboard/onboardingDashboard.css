@@ -150,12 +150,22 @@
     align-items: flex-start;
     margin-bottom: 0.5rem;
 }
+.emp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
 .emp-name {
     display: flex;
     align-items: center;
     font-size: 1rem;
     font-weight: 600;
     color: #032d60;
+}
+.emp-job-title {
+    font-size: 0.75rem;
+    color: #706e6b;
+    padding-left: 1.35rem;
 }
 .card-row-2 {
     display: flex;
@@ -171,11 +181,43 @@
     font-size: 0.72rem;
     font-weight: 700;
 }
+.card-row-3 {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+    margin-top: 0.375rem;
+}
 .meta-item {
     display: flex;
     align-items: center;
     font-size: 0.78rem;
     color: #706e6b;
+}
+
+/* Work Mode badges */
+.wm-badge {
+    border-radius: 1rem;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.wm-onsite { background: #e8f4fd; color: #0176d3; }
+.wm-hybrid  { background: #fef9e7; color: #a87900; }
+.wm-remote  { background: #f3e8fd; color: #7526e3; }
+
+/* Location badge */
+.loc-badge {
+    display: flex;
+    align-items: center;
+    background: #ebf7ee;
+    color: #2e844a;
+    border-radius: 1rem;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 /* Status badges */

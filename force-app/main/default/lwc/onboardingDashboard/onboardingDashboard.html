@@ -64,6 +64,26 @@
                     onchange={handleDepartmentFilter}>
                 </lightning-combobox>
             </div>
+            <div class="filter-field">
+                <lightning-combobox
+                    label="Location"
+                    variant="label-hidden"
+                    placeholder="All Locations"
+                    value={selectedLocation}
+                    options={locationOptions}
+                    onchange={handleLocationFilter}>
+                </lightning-combobox>
+            </div>
+            <div class="filter-field">
+                <lightning-combobox
+                    label="Work Mode"
+                    variant="label-hidden"
+                    placeholder="All Work Modes"
+                    value={selectedWorkMode}
+                    options={workModeOptions}
+                    onchange={handleWorkModeFilter}>
+                </lightning-combobox>
+            </div>
             <span class="filter-count">{filteredCount} record(s)</span>
         </div>
 
@@ -103,17 +123,36 @@
                             <!-- Card Top: click to open record -->
                             <div class="card-top" data-id={req.Id} onclick={handleRowClick}>
                                 <div class="card-row-1">
-                                    <div class="emp-name">
-                                        <lightning-icon icon-name="standard:employee"
-                                            size="x-small"
-                                            class="slds-m-right_xx-small">
-                                        </lightning-icon>
-                                        {req.Employee_Name__c}
+                                    <div class="emp-info">
+                                        <div class="emp-name">
+                                            <lightning-icon icon-name="standard:employee"
+                                                size="x-small"
+                                                class="slds-m-right_xx-small">
+                                            </lightning-icon>
+                                            {req.Employee_Name__c}
+                                        </div>
+                                        <template if:true={req.jobTitle}>
+                                            <div class="emp-job-title">{req.jobTitle}</div>
+                                        </template>
                                     </div>
                                     <span class={req.statusClass}>{req.Status__c}</span>
                                 </div>
                                 <div class="card-row-2">
                                     <span class="dept-chip">{req.Department__c}</span>
+                                    <template if:true={req.workModeText}>
+                                        <span class={req.workModeBadgeClass}>{req.workModeText}</span>
+                                    </template>
+                                    <template if:true={req.locationText}>
+                                        <span class="loc-badge">
+                                            <lightning-icon icon-name="utility:location"
+                                                size="xx-small"
+                                                class="slds-m-right_xx-small">
+                                            </lightning-icon>
+                                            {req.locationText}
+                                        </span>
+                                    </template>
+                                </div>
+                                <div class="card-row-3">
                                     <span class="meta-item">
                                         <lightning-icon icon-name="utility:date_input"
                                             size="xx-small"
@@ -128,6 +167,15 @@
                                         </lightning-icon>
                                         {req.assignedHRName}
                                     </span>
+                                    <template if:true={req.reportingManagerName}>
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:hierarchy"
+                                                size="xx-small"
+                                                class="slds-m-right_xx-small">
+                                            </lightning-icon>
+                                            {req.reportingManagerName}
+                                        </span>
+                                    </template>
                                 </div>
                             </div>
 
