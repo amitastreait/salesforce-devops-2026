@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reporting_Manager__c</fullName>
+    <label>Reporting Manager</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Onboarding Requests (Reporting Manager)</relationshipLabel>
+    <relationshipName>Reporting_Manager_Onboarding_Requests</relationshipName>
+    <type>Lookup</type>
+</CustomField>

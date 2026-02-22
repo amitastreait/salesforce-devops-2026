@@ -15,7 +15,7 @@
     border-radius: 1rem;
     box-shadow: 0 4px 20px rgba(0,0,0,0.09);
     width: 100%;
-    max-width: 640px;
+    max-width: 780px;
     overflow: hidden;
     position: relative;
 }
@@ -65,12 +65,62 @@
     padding: 1.5rem 1.75rem;
 }
 
-/* ─── Field Groups ─────────────────────────────────────────────────────── */
+/* ─── Form Sections ─────────────────────────────────────────────────────── */
+.form-section {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0176d3;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.875rem;
+}
+.section-icon {
+    flex-shrink: 0;
+}
+
+/* ─── Two-column Field Row ──────────────────────────────────────────────── */
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+@media (max-width: 520px) {
+    .field-row { grid-template-columns: 1fr; }
+}
+
+/* ─── Field Wrap ────────────────────────────────────────────────────────── */
+.field-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ─── Field Groups (legacy compat) ─────────────────────────────────────── */
 .field-group {
     margin-bottom: 1.25rem;
 }
 .field-half {
-    max-width: 280px;
+    max-width: 340px;
+}
+
+/* ─── Optional Tag ──────────────────────────────────────────────────────── */
+.optional-tag {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #706e6b;
+    background: #f3f3f3;
+    border-radius: 0.875rem;
+    padding: 0.1rem 0.5rem;
+    margin-left: 0.35rem;
+    text-transform: none;
+    letter-spacing: 0;
 }
 .field-label {
     display: block;

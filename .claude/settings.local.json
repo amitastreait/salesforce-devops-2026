@@ -6,7 +6,8 @@
       "Bash(sf org list metadata:*)",
       "Bash(sf project retrieve start:*)",
       "Bash(sf data query:*)",
-      "Bash(sf apex run test:*)"
+      "Bash(sf apex run test:*)",
+      "WebFetch(domain:randomuser.me)"
     ]
   }
 }

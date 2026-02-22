@@ -190,21 +190,72 @@ public with sharing class OnboardingService {
     }
 
     /**
+     * @description Returns all active internal users as combobox options for the LWC form.
+     *              Used to populate Reporting Manager and Buddy dropdowns.
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, String>> getActiveUsers() {
+        List<Map<String, String>> opts = new List<Map<String, String>>();
+        for (User u : [
+            SELECT Id, Name
+            FROM   User
+            WHERE  IsActive = true
+            WITH USER_MODE
+            ORDER BY Name ASC
+            LIMIT  200
+        ]) {
+            opts.add(new Map<String, String>{ 'label' => u.Name, 'value' => u.Id });
+        }
+        return opts;
+    }
+
+    /**
      * @description Creates a new Onboarding Request from the LWC form.
-     * @param employeeName   Full name of the new hire
-     * @param startDate      First day of work
-     * @param department     Department picklist value
+     * @param employeeName       Full name of the new hire
+     * @param startDate          First day of work
+     * @param department         Department picklist value
+     * @param jobTitle           Role / position being hired for
+     * @param employmentType     Full-Time / Part-Time / Contract / Intern
+     * @param experience         Years of experience picklist value
+     * @param personalEmail      Personal email of the new hire
+     * @param phone              Personal phone of the new hire
+     * @param location           Office location picklist value
+     * @param workMode           On-site / Hybrid / Remote
+     * @param reportingManagerId Id of the User who will be the reporting manager
+     * @param buddyId            Id of the User assigned as onboarding buddy
      * @return Id of the newly created record
      */
     @AuraEnabled
-    public static Id createOnboardingRequest(String employeeName, Date startDate, String department) {
+    public static Id createOnboardingRequest(
+        String employeeName,
+        Date   startDate,
+        String department,
+        String jobTitle,
+        String employmentType,
+        String experience,
+        String personalEmail,
+        String phone,
+        String location,
+        String workMode,
+        Id     reportingManagerId,
+        Id     buddyId
+    ) {
         Onboarding_Request__c request = new Onboarding_Request__c(
-            Employee_Name__c = employeeName,
-            Start_Date__c    = startDate,
-            Department__c    = department,
-            Status__c        = 'New'
+            Employee_Name__c     = employeeName,
+            Start_Date__c        = startDate,
+            Department__c        = department,
+            Status__c            = 'New',
+            Job_Title__c         = jobTitle,
+            Employment_Type__c   = employmentType,
+            Experience__c        = experience,
+            Personal_Email__c    = personalEmail,
+            Phone__c             = phone,
+            Location__c          = location,
+            Work_Mode__c         = workMode,
+            Reporting_Manager__c = reportingManagerId,
+            Buddy__c             = buddyId
         );
-        insert request;
+        insert as user request;
         return request.Id;
     }
 

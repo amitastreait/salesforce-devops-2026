@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Buddy__c</fullName>
+    <label>Onboarding Buddy</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Onboarding Requests (Buddy)</relationshipLabel>
+    <relationshipName>Buddy_Onboarding_Requests</relationshipName>
+    <type>Lookup</type>
+</CustomField>

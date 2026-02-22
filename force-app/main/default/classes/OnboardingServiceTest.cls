@@ -279,26 +279,38 @@ private class OnboardingServiceTest {
     static void createOnboardingRequest_createsRecordWithCorrectFields() {
         Test.startTest();
         Id newId = OnboardingService.createOnboardingRequest(
-            'Ivy Taylor', Date.today().addDays(7), 'Finance'
+            'Ivy Taylor', Date.today().addDays(7), 'Finance',
+            'Business Analyst', 'Full-Time', '3-5 Years',
+            'ivy@personal.com', '+1 555 0001',
+            'New York', 'Hybrid', null, null
         );
         Test.stopTest();
 
         Assert.isNotNull(newId, 'Should return a valid record Id');
 
         Onboarding_Request__c created = [
-            SELECT Employee_Name__c, Department__c, Status__c
+            SELECT Employee_Name__c, Department__c, Status__c,
+                   Job_Title__c, Employment_Type__c, Experience__c,
+                   Personal_Email__c, Location__c, Work_Mode__c
             FROM   Onboarding_Request__c WHERE Id = :newId
         ];
-        Assert.areEqual('Ivy Taylor', created.Employee_Name__c, 'Employee name should match');
-        Assert.areEqual('Finance',    created.Department__c,    'Department should match');
-        Assert.areEqual('New',        created.Status__c,        'Status should default to New');
+        Assert.areEqual('Ivy Taylor',      created.Employee_Name__c,   'Employee name should match');
+        Assert.areEqual('Finance',         created.Department__c,       'Department should match');
+        Assert.areEqual('New',             created.Status__c,           'Status should default to New');
+        Assert.areEqual('Business Analyst',created.Job_Title__c,        'Job title should match');
+        Assert.areEqual('Full-Time',       created.Employment_Type__c,  'Employment type should match');
+        Assert.areEqual('3-5 Years',       created.Experience__c,       'Experience should match');
+        Assert.areEqual('New York',        created.Location__c,         'Location should match');
+        Assert.areEqual('Hybrid',          created.Work_Mode__c,        'Work mode should match');
     }
 
     @IsTest
     static void createOnboardingRequest_autoCreates4Tasks() {
         Test.startTest();
         Id newId = OnboardingService.createOnboardingRequest(
-            'Jack Brown', Date.today().addDays(14), 'Sales'
+            'Jack Brown', Date.today().addDays(14), 'Sales',
+            'Sales Executive', 'Full-Time', '1-3 Years',
+            null, null, null, null, null, null
         );
         Test.stopTest();
 

@@ -11,7 +11,6 @@
                 <p class="success-sub">
                     <strong>{createdEmployeeName}</strong> has been added to the onboarding queue.
                 </p>
-
                 <div class="tasks-created-row">
                     <template for:each={autoTaskList} for:item="t">
                         <div key={t.label} class="task-created-badge">
@@ -20,19 +19,9 @@
                         </div>
                     </template>
                 </div>
-
                 <div class="success-actions">
-                    <lightning-button
-                        label="View Record"
-                        variant="brand"
-                        onclick={handleViewRecord}>
-                    </lightning-button>
-                    <lightning-button
-                        label="Create Another"
-                        variant="neutral"
-                        onclick={handleCreateAnother}
-                        class="slds-m-left_small">
-                    </lightning-button>
+                    <lightning-button label="View Record" variant="brand" onclick={handleViewRecord}></lightning-button>
+                    <lightning-button label="Create Another" variant="neutral" onclick={handleCreateAnother} class="slds-m-left_small"></lightning-button>
                 </div>
             </div>
         </template>
@@ -44,88 +33,222 @@
                 <!-- Header -->
                 <div class="form-header">
                     <div class="header-icon">
-                        <lightning-icon icon-name="standard:user" size="medium" variant="inverse"></lightning-icon>
+                        <lightning-icon icon-name="standard:employee_organization" size="medium" variant="inverse"></lightning-icon>
                     </div>
                     <div class="header-text">
                         <h1 class="header-title">New Hire Onboarding Request</h1>
-                        <p class="header-sub">Fill in the details below. 4 onboarding tasks will be auto-created on save.</p>
+                        <p class="header-sub">Complete all sections below. Onboarding tasks will be auto-generated on save.</p>
                     </div>
                 </div>
 
                 <!-- Error Banner -->
                 <template if:true={errorMessage}>
                     <div class="error-bar" role="alert">
-                        <lightning-icon icon-name="utility:error" size="x-small" variant="error"
-                            class="slds-m-right_x-small"></lightning-icon>
+                        <lightning-icon icon-name="utility:error" size="x-small" variant="error" class="slds-m-right_x-small"></lightning-icon>
                         {errorMessage}
                     </div>
                 </template>
 
                 <div class="form-body">
 
-                    <!-- Employee Name -->
-                    <div class="field-group">
-                        <label class="field-label">
-                            Employee Name <span class="required-star">*</span>
-                        </label>
-                        <lightning-input
-                            label="Employee Name"
-                            variant="label-hidden"
-                            placeholder="e.g. Jane Doe"
-                            value={employeeName}
-                            onchange={handleNameChange}>
-                        </lightning-input>
-                    </div>
-
-                    <!-- Department Tiles -->
-                    <div class="field-group">
-                        <label class="field-label">
-                            Department <span class="required-star">*</span>
-                        </label>
-                        <div class="dept-grid">
-                            <template for:each={departmentOptions} for:item="opt">
-                                <div key={opt.value}
-                                    class={opt.tileClass}
-                                    data-value={opt.value}
-                                    onclick={handleDeptSelect}>
-                                    <lightning-icon
-                                        icon-name={opt.icon}
-                                        size="small"
-                                        class="dept-icon">
-                                    </lightning-icon>
-                                    <span class="dept-label">{opt.label}</span>
-                                </div>
-                            </template>
+                    <!-- ── Section 1: Employee Details ─────────────────── -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <lightning-icon icon-name="utility:user" size="xx-small" class="section-icon"></lightning-icon>
+                            Employee Details
+                        </div>
+                        <div class="field-row">
+                            <div class="field-wrap">
+                                <label class="field-label">Employee Name <span class="required-star">*</span></label>
+                                <lightning-input
+                                    label="Employee Name"
+                                    variant="label-hidden"
+                                    placeholder="e.g. Jane Doe"
+                                    value={employeeName}
+                                    onchange={handleNameChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="field-wrap">
+                                <label class="field-label">Job Title <span class="required-star">*</span></label>
+                                <lightning-input
+                                    label="Job Title"
+                                    variant="label-hidden"
+                                    placeholder="e.g. Software Engineer"
+                                    value={jobTitle}
+                                    onchange={handleJobTitleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="field-row slds-m-top_small">
+                            <div class="field-wrap">
+                                <label class="field-label">Employment Type</label>
+                                <lightning-combobox
+                                    label="Employment Type"
+                                    variant="label-hidden"
+                                    placeholder="Select type..."
+                                    options={employmentTypeOptions}
+                                    value={employmentType}
+                                    onchange={handleEmploymentTypeChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="field-wrap">
+                                <label class="field-label">Years of Experience</label>
+                                <lightning-combobox
+                                    label="Years of Experience"
+                                    variant="label-hidden"
+                                    placeholder="Select experience..."
+                                    options={experienceOptions}
+                                    value={experience}
+                                    onchange={handleExperienceChange}>
+                                </lightning-combobox>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Start Date -->
-                    <div class="field-group field-half">
-                        <label class="field-label">
-                            Start Date <span class="required-star">*</span>
-                        </label>
-                        <lightning-input
-                            type="date"
-                            label="Start Date"
-                            variant="label-hidden"
-                            value={startDate}
-                            min={minDate}
-                            onchange={handleDateChange}>
-                        </lightning-input>
+                    <!-- ── Section 2: Contact Information ─────────────── -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <lightning-icon icon-name="utility:email" size="xx-small" class="section-icon"></lightning-icon>
+                            Contact Information
+                        </div>
+                        <div class="field-row">
+                            <div class="field-wrap">
+                                <label class="field-label">Personal Email</label>
+                                <lightning-input
+                                    type="email"
+                                    label="Personal Email"
+                                    variant="label-hidden"
+                                    placeholder="jane.doe@personal.com"
+                                    value={personalEmail}
+                                    onchange={handleEmailChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="field-wrap">
+                                <label class="field-label">Personal Phone</label>
+                                <lightning-input
+                                    type="tel"
+                                    label="Personal Phone"
+                                    variant="label-hidden"
+                                    placeholder="+1 (555) 000-0000"
+                                    value={phone}
+                                    onchange={handlePhoneChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Section 3: Work Setup ───────────────────────── -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <lightning-icon icon-name="utility:office365" size="xx-small" class="section-icon"></lightning-icon>
+                            Work Setup
+                        </div>
+
+                        <!-- Department Tiles -->
+                        <div class="field-wrap">
+                            <label class="field-label">
+                                Department <span class="required-star">*</span>
+                            </label>
+                            <div class="dept-grid">
+                                <template for:each={departmentOptions} for:item="opt">
+                                    <div key={opt.value}
+                                        class={opt.tileClass}
+                                        data-value={opt.value}
+                                        onclick={handleDeptSelect}>
+                                        <lightning-icon icon-name={opt.icon} size="small" class="dept-icon"></lightning-icon>
+                                        <span class="dept-label">{opt.label}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="field-row slds-m-top_small">
+                            <div class="field-wrap">
+                                <label class="field-label">Location</label>
+                                <lightning-combobox
+                                    label="Location"
+                                    variant="label-hidden"
+                                    placeholder="Select office location..."
+                                    options={locationOptions}
+                                    value={location}
+                                    onchange={handleLocationChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="field-wrap">
+                                <label class="field-label">Work Mode</label>
+                                <lightning-combobox
+                                    label="Work Mode"
+                                    variant="label-hidden"
+                                    placeholder="Select work mode..."
+                                    options={workModeOptions}
+                                    value={workMode}
+                                    onchange={handleWorkModeChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <div class="field-wrap field-half slds-m-top_small">
+                            <label class="field-label">
+                                Start Date <span class="required-star">*</span>
+                            </label>
+                            <lightning-input
+                                type="date"
+                                label="Start Date"
+                                variant="label-hidden"
+                                value={startDate}
+                                min={minDate}
+                                onchange={handleDateChange}>
+                            </lightning-input>
+                        </div>
+                    </div>
+
+                    <!-- ── Section 4: Team & Reporting ────────────────── -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <lightning-icon icon-name="utility:people" size="xx-small" class="section-icon"></lightning-icon>
+                            Team &amp; Reporting
+                        </div>
+                        <div class="field-row">
+                            <div class="field-wrap">
+                                <label class="field-label">Reporting Manager</label>
+                                <lightning-combobox
+                                    label="Reporting Manager"
+                                    variant="label-hidden"
+                                    placeholder="Select reporting manager..."
+                                    options={userOptions}
+                                    value={reportingManagerId}
+                                    onchange={handleManagerChange}
+                                    dropdown-alignment="auto">
+                                </lightning-combobox>
+                            </div>
+                            <div class="field-wrap">
+                                <label class="field-label">
+                                    Onboarding Buddy
+                                    <span class="optional-tag">Optional</span>
+                                </label>
+                                <lightning-combobox
+                                    label="Onboarding Buddy"
+                                    variant="label-hidden"
+                                    placeholder="Assign a buddy..."
+                                    options={userOptions}
+                                    value={buddyId}
+                                    onchange={handleBuddyChange}
+                                    dropdown-alignment="auto">
+                                </lightning-combobox>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Auto-Tasks Preview -->
                     <div class="preview-strip">
                         <p class="preview-label">
-                            <lightning-icon icon-name="utility:knowledge_base" size="xx-small"
-                                class="slds-m-right_xx-small"></lightning-icon>
+                            <lightning-icon icon-name="utility:knowledge_base" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                             Auto-generated on save:
                         </p>
                         <div class="preview-tasks">
                             <template for:each={autoTaskList} for:item="t">
                                 <div key={t.label} class="preview-task">
-                                    <lightning-icon icon-name={t.icon} size="xx-small"
-                                        class="slds-m-right_xx-small"></lightning-icon>
+                                    <lightning-icon icon-name={t.icon} size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                     {t.label}
                                 </div>
                             </template>
@@ -134,18 +257,8 @@
 
                     <!-- Actions -->
                     <div class="form-footer">
-                        <lightning-button
-                            label="Reset"
-                            variant="neutral"
-                            onclick={handleReset}
-                            disabled={isLoading}>
-                        </lightning-button>
-                        <lightning-button
-                            label="Create Onboarding Request"
-                            variant="brand"
-                            onclick={handleSubmit}
-                            disabled={isLoading}>
-                        </lightning-button>
+                        <lightning-button label="Reset" variant="neutral" onclick={handleReset} disabled={isLoading}></lightning-button>
+                        <lightning-button label="Create Onboarding Request" variant="brand" onclick={handleSubmit} disabled={isLoading}></lightning-button>
                     </div>
 
                 </div>
