@@ -447,4 +447,101 @@ private class OnboardingServiceTest {
         Assert.areEqual(100, updated.Completion_Percentage__c, 'Completion should be 100% when all tasks done');
         Assert.areEqual('Completed', updated.Status__c,         'Status should be Completed when all tasks done');
     }
+
+    // ─── getComments / addComment ─────────────────────────────────────────────
+
+    @IsTest
+    static void addComment_createsRecord() {
+        Onboarding_Request__c req = makeRequest('Comment Emp', 5);
+        insert req;
+
+        Test.startTest();
+        OnboardingService.addComment(req.Id, 'Test comment body', false);
+        Test.stopTest();
+
+        List<Onboarding_Comment__c> comments = [
+            SELECT Comment__c, Is_Internal__c
+            FROM   Onboarding_Comment__c
+            WHERE  Onboarding_Request__c = :req.Id
+        ];
+        Assert.areEqual(1,              comments.size(),              'One comment should be created');
+        Assert.areEqual('Test comment body', comments[0].Comment__c, 'Comment text should match');
+        Assert.isFalse(comments[0].Is_Internal__c,                    'Is_Internal__c should be false');
+    }
+
+    @IsTest
+    static void addComment_internalFlag_persisted() {
+        Onboarding_Request__c req = makeRequest('Internal Comment Emp', 5);
+        insert req;
+
+        Test.startTest();
+        OnboardingService.addComment(req.Id, 'HR only note', true);
+        Test.stopTest();
+
+        Onboarding_Comment__c c = [
+            SELECT Is_Internal__c FROM Onboarding_Comment__c
+            WHERE  Onboarding_Request__c = :req.Id LIMIT 1
+        ];
+        Assert.isTrue(c.Is_Internal__c, 'Is_Internal__c should be true for internal comment');
+    }
+
+    @IsTest
+    static void getComments_returnsCommentsForRequest() {
+        Onboarding_Request__c req = makeRequest('Get Comments Emp', 5);
+        insert req;
+        OnboardingService.addComment(req.Id, 'First',  false);
+        OnboardingService.addComment(req.Id, 'Second', true);
+
+        Test.startTest();
+        List<Onboarding_Comment__c> results = OnboardingService.getComments(req.Id);
+        Test.stopTest();
+
+        Assert.areEqual(2, results.size(), 'Should return 2 comments');
+    }
+
+    @IsTest
+    static void getComments_emptyForNewRequest() {
+        Onboarding_Request__c req = makeRequest('No Comments Emp', 5);
+        insert req;
+
+        Test.startTest();
+        List<Onboarding_Comment__c> results = OnboardingService.getComments(req.Id);
+        Test.stopTest();
+
+        Assert.areEqual(0, results.size(), 'New request should have no comments');
+    }
+
+    // ─── updateRequestStatus ──────────────────────────────────────────────────
+
+    @IsTest
+    static void updateRequestStatus_changesStatusField() {
+        Onboarding_Request__c req = makeRequest('Kanban Emp', 5);
+        insert req;
+        Assert.areEqual('New', req.Status__c, 'Status should start as New');
+
+        Test.startTest();
+        OnboardingService.updateRequestStatus(req.Id, 'In Progress');
+        Test.stopTest();
+
+        Onboarding_Request__c updated = [
+            SELECT Status__c FROM Onboarding_Request__c WHERE Id = :req.Id
+        ];
+        Assert.areEqual('In Progress', updated.Status__c, 'Status should be updated to In Progress');
+    }
+
+    @IsTest
+    static void updateRequestStatus_toCancelled() {
+        Onboarding_Request__c req = makeRequest('Cancel Emp', 5);
+        req.Status__c = 'In Progress';
+        insert req;
+
+        Test.startTest();
+        OnboardingService.updateRequestStatus(req.Id, 'Cancelled');
+        Test.stopTest();
+
+        Onboarding_Request__c updated = [
+            SELECT Status__c FROM Onboarding_Request__c WHERE Id = :req.Id
+        ];
+        Assert.areEqual('Cancelled', updated.Status__c, 'Status should be updated to Cancelled');
+    }
 }

@@ -9,6 +9,12 @@
         <type>Flexipage</type>
         <pageOrSobjectType>Onboarding_Request__c</pageOrSobjectType>
     </actionOverrides>
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <logo>onboarding_tracker</logo>
+        <logoVersion>1</logoVersion>
+        <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
+    </brand>
     <defaultLandingTab>Onboarding_Dashboard_Tab</defaultLandingTab>
     <description>Employee Onboarding Tracker — manage new hire requests, tasks, and progress from a single app.</description>
     <formFactors>Large</formFactors>
@@ -20,6 +26,7 @@
     <navType>Standard</navType>
     <tabs>Onboarding_Dashboard_Tab</tabs>
     <tabs>Onboarding_Dashboard</tabs>
+    <tabs>Onboarding_Kanban</tabs>
     <tabs>New_Onboarding_Request</tabs>
     <tabs>New_Onboarding_Request_Tab</tabs>
     <tabs>Onboarding_Request__c</tabs>

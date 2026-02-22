@@ -5,6 +5,22 @@
 		<name>ApprovalProcess</name>
 	</types>
 	<types>
+		<members>onboarding_tracker</members>
+		<name>ContentAsset</name>
+	</types>
+	<types>
+		<members>Onboarding_Tracker</members>
+		<name>CustomApplication</name>
+	</types>
+	<types>
+		<members>*</members>
+		<name>CustomMetadata</name>
+	</types>
+	<types>
+		<members>Onboarding_Task_Template__mdt</members>
+		<name>CustomObject</name>
+	</types>
+	<types>
 		<members>New_Onboarding_Request</members>
 		<members>New_Onboarding_Request_Tab</members>
 		<members>Onboarding_Dashboard</members>
@@ -32,7 +48,9 @@
 		<name>Group</name>
 	</types>
 	<types>
+		<members>Onboarding_Comment__c-Onboarding Comment Layout</members>
 		<members>Onboarding_Request__c-Onboarding Request Layout</members>
+		<members>Onboarding_Task_Template__mdt-Onboarding Task Template Layout</members>
 		<members>Onboarding_Task__c-Onboarding Task Layout</members>
 		<name>Layout</name>
 	</types>

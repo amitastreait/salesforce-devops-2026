@@ -61,6 +61,16 @@
         <field>Onboarding_Task__c.Is_Completed__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Onboarding_Comment__c.Comment__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Onboarding_Comment__c.Is_Internal__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <flowAccesses>
         <enabled>true</enabled>
         <flow>New_Hire_Onboarding_Wizard</flow>
@@ -68,6 +78,16 @@
     <hasActivationRequired>false</hasActivationRequired>
     <label>Onboarding Manager</label>
     <license>Salesforce</license>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Onboarding_Comment__c</object>
+        <viewAllFields>false</viewAllFields>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>true</allowDelete>
@@ -90,6 +110,10 @@
     </objectPermissions>
     <tabSettings>
         <tab>New_Onboarding_Request</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Onboarding_Kanban</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>

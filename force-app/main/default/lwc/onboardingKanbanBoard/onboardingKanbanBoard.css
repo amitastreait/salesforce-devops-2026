@@ -1,0 +1,192 @@
+/* ─── Wrapper ────────────────────────────────────────────────────────────── */
+.kanban-wrap {
+    padding: 1rem;
+    background: #f3f5f8;
+    min-height: 100%;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────── */
+.kanban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.kanban-title {
+    display: flex;
+    align-items: center;
+}
+.kanban-title h1 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #032d60;
+    margin: 0;
+}
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.dept-filter {
+    min-width: 180px;
+}
+
+/* ─── Error / Loading ────────────────────────────────────────────────────── */
+.error-bar {
+    display: flex;
+    align-items: center;
+    background: #fef1ee;
+    border-left: 4px solid #ba0517;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #ba0517;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+.center-pad {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+/* ─── Board ──────────────────────────────────────────────────────────────── */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.875rem;
+    align-items: start;
+}
+
+/* ─── Column ─────────────────────────────────────────────────────────────── */
+.kanban-col {
+    background: #eaf0f6;
+    border-radius: 0.875rem;
+    min-height: 300px;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+.kanban-col.drag-over {
+    background: #ddeeff;
+    box-shadow: inset 0 0 0 2px #0176d3;
+}
+
+/* Column headers */
+.col-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.875rem 0.875rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+.h-new      { background: #1b96ff; color: #fff; }
+.h-progress { background: #f4bc25; color: #7a5200; }
+.h-done     { background: #2e844a; color: #fff; }
+.h-cancel   { background: #ba0517; color: #fff; }
+
+.col-label { flex: 1; }
+.col-count {
+    background: rgba(255,255,255,0.28);
+    border-radius: 0.75rem;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 1.25rem;
+    text-align: center;
+}
+
+/* Cards area */
+.cards-area {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ─── Card ───────────────────────────────────────────────────────────────── */
+.k-card {
+    background: #fff;
+    border-radius: 0.625rem;
+    padding: 0.75rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    cursor: grab;
+    transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
+    user-select: none;
+}
+.k-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.13);
+    transform: translateY(-1px);
+}
+.k-card.is-dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+    transform: rotate(1.5deg) scale(1.02);
+}
+.k-card-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #032d60;
+    margin-bottom: 0.375rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.k-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+.k-dept-chip {
+    background: #e8f4fd;
+    color: #0176d3;
+    border-radius: 0.75rem;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+.k-hr {
+    display: flex;
+    align-items: center;
+    font-size: 0.72rem;
+    color: #706e6b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+.k-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+}
+.k-pct {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #032d60;
+    white-space: nowrap;
+}
+.k-task-count {
+    font-size: 0.7rem;
+    color: #aeaeae;
+    text-align: right;
+}
+
+/* Empty column placeholder */
+.col-empty {
+    text-align: center;
+    color: #aeaeae;
+    font-size: 0.8rem;
+    padding: 1.5rem 0;
+    border: 2px dashed #dddbda;
+    border-radius: 0.5rem;
+    margin: 0.25rem;
+}

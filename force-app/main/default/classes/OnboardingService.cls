@@ -100,6 +100,56 @@ public with sharing class OnboardingService {
         }
     }
 
+    // ─── Comments ─────────────────────────────────────────────────────────────
+
+    /**
+     * @description Returns all comments for an Onboarding Request, newest first.
+     *              Used by the onboardingComments LWC on the record page.
+     * @param requestId Id of the parent Onboarding_Request__c
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Onboarding_Comment__c> getComments(Id requestId) {
+        return [
+            SELECT Id, Comment__c, Is_Internal__c,
+                   CreatedById, CreatedBy.Name, CreatedDate
+            FROM   Onboarding_Comment__c
+            WHERE  Onboarding_Request__c = :requestId
+            ORDER BY CreatedDate DESC
+            LIMIT  200
+        ];
+    }
+
+    /**
+     * @description Creates a new comment on an Onboarding Request.
+     * @param requestId   Id of the parent Onboarding_Request__c
+     * @param commentText Body text of the comment
+     * @param isInternal  True = internal HR note; false = general comment
+     */
+    @AuraEnabled
+    public static void addComment(Id requestId, String commentText, Boolean isInternal) {
+        insert new Onboarding_Comment__c(
+            Onboarding_Request__c = requestId,
+            Comment__c            = commentText,
+            Is_Internal__c        = isInternal != null ? isInternal : false
+        );
+    }
+
+    // ─── Kanban Status Update ─────────────────────────────────────────────────
+
+    /**
+     * @description Updates the Status__c of an Onboarding Request.
+     *              Called by the onboardingKanbanBoard LWC on card drag-and-drop.
+     * @param requestId Id of the Onboarding_Request__c to update
+     * @param newStatus New status picklist value
+     */
+    @AuraEnabled
+    public static void updateRequestStatus(Id requestId, String newStatus) {
+        update new Onboarding_Request__c(
+            Id        = requestId,
+            Status__c = newStatus
+        );
+    }
+
     // ─── LWC Controller Methods ───────────────────────────────────────────────
 
     /**

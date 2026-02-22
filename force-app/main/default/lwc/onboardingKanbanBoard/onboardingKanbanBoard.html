@@ -1,0 +1,109 @@
+<template>
+    <div class="kanban-wrap">
+
+        <!-- ── Header ───────────────────────────────────────────────────── -->
+        <div class="kanban-header">
+            <div class="kanban-title">
+                <lightning-icon icon-name="standard:kanban" size="small"
+                    class="slds-m-right_x-small"></lightning-icon>
+                <h1>Onboarding Kanban</h1>
+            </div>
+            <div class="header-actions">
+                <div class="dept-filter">
+                    <lightning-combobox
+                        label="Department"
+                        variant="label-hidden"
+                        placeholder="All Departments"
+                        value={selectedDepartment}
+                        options={deptOptions}
+                        onchange={handleDepartmentFilter}>
+                    </lightning-combobox>
+                </div>
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    variant="border-filled"
+                    alternative-text="Refresh"
+                    title="Refresh"
+                    onclick={handleRefresh}>
+                </lightning-button-icon>
+            </div>
+        </div>
+
+        <!-- ── Error ────────────────────────────────────────────────────── -->
+        <template if:true={error}>
+            <div class="error-bar" role="alert">{error}</div>
+        </template>
+
+        <!-- ── Loading ──────────────────────────────────────────────────── -->
+        <template if:true={isLoading}>
+            <div class="center-pad">
+                <lightning-spinner alternative-text="Loading…" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- ── Board ────────────────────────────────────────────────────── -->
+        <template if:false={isLoading}>
+            <div class="kanban-board">
+                <template for:each={columns} for:item="col">
+                    <div key={col.value}
+                         class={col.columnClass}
+                         data-status={col.value}
+                         ondragover={handleDragOver}
+                         ondragleave={handleDragLeave}
+                         ondrop={handleDrop}>
+
+                        <!-- Column header -->
+                        <div class={col.headerClass}>
+                            <span class="col-label">{col.label}</span>
+                            <span class="col-count">{col.count}</span>
+                        </div>
+
+                        <!-- Cards -->
+                        <div class="cards-area">
+                            <template for:each={col.cards} for:item="card">
+                                <div key={card.Id}
+                                     class="k-card"
+                                     draggable="true"
+                                     data-id={card.Id}
+                                     data-status={card.Status__c}
+                                     ondragstart={handleDragStart}
+                                     ondragend={handleDragEnd}>
+
+                                    <div class="k-card-name">{card.Employee_Name__c}</div>
+                                    <div class="k-card-meta">
+                                        <span class="k-dept-chip">{card.Department__c}</span>
+                                        <span class="k-hr">
+                                            <lightning-icon icon-name="utility:user"
+                                                size="xx-small"
+                                                class="slds-m-right_xx-small">
+                                            </lightning-icon>
+                                            {card.assignedHRName}
+                                        </span>
+                                    </div>
+                                    <div class="k-progress-row">
+                                        <lightning-progress-bar
+                                            value={card.pct}
+                                            size="x-small"
+                                            variant="base">
+                                        </lightning-progress-bar>
+                                        <span class="k-pct">{card.pct}%</span>
+                                    </div>
+                                    <div class="k-task-count">
+                                        {card.completedCount}/{card.taskCount} tasks
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Empty column -->
+                            <template if:false={col.count}>
+                                <div class="col-empty">Drop cards here</div>
+                            </template>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+        </template>
+
+    </div>
+</template>

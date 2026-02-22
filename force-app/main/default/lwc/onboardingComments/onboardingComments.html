@@ -1,0 +1,82 @@
+<template>
+    <div class="comments-wrap">
+
+        <!-- ── Header ──────────────────────────────────────────────────── -->
+        <div class="comments-header">
+            <lightning-icon icon-name="utility:comments" size="x-small"
+                class="slds-m-right_x-small"></lightning-icon>
+            <h3 class="header-title">Comments</h3>
+        </div>
+
+        <!-- ── Add Comment ──────────────────────────────────────────────── -->
+        <div class="add-comment-box">
+            <textarea
+                class="comment-textarea"
+                placeholder="Add a comment…"
+                value={commentText}
+                onchange={handleCommentChange}>
+            </textarea>
+            <div class="comment-actions">
+                <label class="internal-label">
+                    <input
+                        type="checkbox"
+                        class="internal-check"
+                        checked={isInternal}
+                        onchange={handleInternalChange} />
+                    <span>Internal only</span>
+                </label>
+                <button
+                    class="post-btn"
+                    onclick={handleSubmit}
+                    disabled={isSubmitDisabled}>
+                    <template if:true={isSubmitting}>
+                        <lightning-spinner size="xx-small"
+                            alternative-text="Saving…"></lightning-spinner>
+                    </template>
+                    <template if:false={isSubmitting}>
+                        Post
+                    </template>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Loading ──────────────────────────────────────────────────── -->
+        <template if:true={isLoading}>
+            <div class="center-pad">
+                <lightning-spinner size="small"
+                    alternative-text="Loading comments…"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- ── Error ────────────────────────────────────────────────────── -->
+        <template if:true={error}>
+            <div class="error-bar">{error}</div>
+        </template>
+
+        <!-- ── Empty ────────────────────────────────────────────────────── -->
+        <template if:true={isEmpty}>
+            <p class="empty-msg">No comments yet.</p>
+        </template>
+
+        <!-- ── Feed ─────────────────────────────────────────────────────── -->
+        <template if:false={isLoading}>
+            <ul class="comments-feed">
+                <template for:each={comments} for:item="c">
+                    <li key={c.Id} class={c.commentClass}>
+                        <div class="comment-meta">
+                            <lightning-icon icon-name="standard:user" size="xx-small"
+                                class="slds-m-right_xx-small"></lightning-icon>
+                            <span class="author-name">{c.authorName}</span>
+                            <span class="comment-date">{c.formattedDate}</span>
+                            <template if:true={c.Is_Internal__c}>
+                                <span class="internal-badge">Internal</span>
+                            </template>
+                        </div>
+                        <p class="comment-body">{c.Comment__c}</p>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+    </div>
+</template>
