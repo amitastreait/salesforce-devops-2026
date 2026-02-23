@@ -7,7 +7,9 @@
       "Bash(sf project retrieve start:*)",
       "Bash(sf data query:*)",
       "Bash(sf apex run test:*)",
-      "WebFetch(domain:randomuser.me)"
+      "WebFetch(domain:randomuser.me)",
+      "Bash(sf sobject describe:*)",
+      "Bash(python3:*)"
     ]
   }
 }

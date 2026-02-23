@@ -18,11 +18,12 @@ public with sharing class OnboardingTaskTriggerHandler {
     ) {
         switch on operationType {
             when AFTER_UPDATE {
-                // Only recalculate if Is_Completed__c changed on at least one task
+                // Recalculate if Is_Completed__c or Is_Rejected__c changed on at least one task
                 List<Onboarding_Task__c> changed = new List<Onboarding_Task__c>();
                 for (Onboarding_Task__c task : newList) {
                     Onboarding_Task__c old = oldMap.get(task.Id);
-                    if (task.Is_Completed__c != old.Is_Completed__c) {
+                    if (task.Is_Completed__c != old.Is_Completed__c
+                            || task.Is_Rejected__c != old.Is_Rejected__c) {
                         changed.add(task);
                     }
                 }

@@ -63,10 +63,11 @@ public with sharing class OnboardingService {
             requestIds.add(task.Onboarding_Request__c);
         }
 
-        // Query all tasks grouped by parent request
+        // Query all tasks grouped by parent request.
+        // A task counts as "done" if it is completed OR rejected.
         Map<Id, List<Onboarding_Task__c>> tasksByRequest = new Map<Id, List<Onboarding_Task__c>>();
         for (Onboarding_Task__c task : [
-            SELECT Id, Onboarding_Request__c, Is_Completed__c
+            SELECT Id, Onboarding_Request__c, Is_Completed__c, Is_Rejected__c
             FROM   Onboarding_Task__c
             WHERE  Onboarding_Request__c IN :requestIds
         ]) {
@@ -79,24 +80,122 @@ public with sharing class OnboardingService {
         List<Onboarding_Request__c> requestsToUpdate = new List<Onboarding_Request__c>();
         for (Id reqId : tasksByRequest.keySet()) {
             List<Onboarding_Task__c> tasks = tasksByRequest.get(reqId);
-            Integer total     = tasks.size();
-            Integer completed = 0;
+            Integer total = tasks.size();
+            Integer done  = 0;
             for (Onboarding_Task__c t : tasks) {
-                if (t.Is_Completed__c) completed++;
+                if (t.Is_Completed__c || t.Is_Rejected__c) done++;
             }
 
-            Integer pct = (total > 0) ? (Integer)((completed * 100) / total) : 0;
+            Integer pct       = (total > 0) ? (Integer)((done * 100) / total) : 0;
             String  newStatus = (pct == 100) ? 'Completed' : (pct > 0 ? 'In Progress' : 'New');
 
             requestsToUpdate.add(new Onboarding_Request__c(
-                Id                      = reqId,
+                Id                       = reqId,
                 Completion_Percentage__c = pct,
-                Status__c               = newStatus
+                Status__c                = newStatus
             ));
         }
 
         if (!requestsToUpdate.isEmpty()) {
             update requestsToUpdate;
+        }
+    }
+
+    // ─── Completion Validation ────────────────────────────────────────────────
+
+    /**
+     * @description BEFORE_UPDATE guard: prevents Status__c from being set to
+     *              'Completed' if any tasks remain open (not completed, not rejected).
+     *              Called by OnboardingRequestTriggerHandler in BEFORE_UPDATE context.
+     * @param newList Trigger.new
+     * @param oldMap  Trigger.oldMap
+     */
+    public static void validateCompletion(
+        List<Onboarding_Request__c> newList,
+        Map<Id, Onboarding_Request__c> oldMap
+    ) {
+        Set<Id> completingIds = new Set<Id>();
+        for (Onboarding_Request__c req : newList) {
+            if (req.Status__c == 'Completed' && oldMap.get(req.Id).Status__c != 'Completed') {
+                completingIds.add(req.Id);
+            }
+        }
+        if (completingIds.isEmpty()) return;
+
+        // Count tasks that are neither completed nor rejected (i.e. still open)
+        Map<Id, Integer> openTaskCounts = new Map<Id, Integer>();
+        for (AggregateResult ar : [
+            SELECT Onboarding_Request__c reqId, COUNT(Id) cnt
+            FROM   Onboarding_Task__c
+            WHERE  Onboarding_Request__c IN :completingIds
+            AND    Is_Completed__c = false
+            AND    Is_Rejected__c  = false
+            GROUP BY Onboarding_Request__c
+        ]) {
+            openTaskCounts.put((Id) ar.get('reqId'), (Integer) ar.get('cnt'));
+        }
+
+        for (Onboarding_Request__c req : newList) {
+            if (completingIds.contains(req.Id) && openTaskCounts.containsKey(req.Id)) {
+                Integer openCount = openTaskCounts.get(req.Id);
+                req.addError(
+                    'Cannot mark as Completed: ' + openCount +
+                    ' task(s) are still open. Complete or reject all tasks first.'
+                );
+            }
+        }
+    }
+
+    // ─── Completion Side Effects ──────────────────────────────────────────────
+
+    /**
+     * @description AFTER_UPDATE: when an Onboarding Request transitions to
+     *              'Completed', automatically creates an Employee__c record
+     *              pre-populated with the new hire's details.
+     *              Called by OnboardingRequestTriggerHandler in AFTER_UPDATE context.
+     * @param newList Trigger.new
+     * @param oldMap  Trigger.oldMap
+     */
+    public static void handleCompletionSideEffects(
+        List<Onboarding_Request__c> newList,
+        Map<Id, Onboarding_Request__c> oldMap
+    ) {
+        Set<Id> completedIds = new Set<Id>();
+        for (Onboarding_Request__c req : newList) {
+            if (req.Status__c == 'Completed' && oldMap.get(req.Id).Status__c != 'Completed') {
+                completedIds.add(req.Id);
+            }
+        }
+        if (completedIds.isEmpty()) return;
+
+        // Query full request data needed to populate the Employee record
+        List<Onboarding_Request__c> fullReqs = [
+            SELECT Id, Employee_Name__c, Personal_Email__c, Phone__c, Department__c,
+                   Job_Title__c, Employment_Type__c, Location__c, Work_Mode__c,
+                   Start_Date__c, Reporting_Manager__c
+            FROM   Onboarding_Request__c
+            WHERE  Id IN :completedIds
+        ];
+
+        List<Employee__c> empsToCreate = new List<Employee__c>();
+        for (Onboarding_Request__c req : fullReqs) {
+            empsToCreate.add(new Employee__c(
+                Employee_Name__c      = req.Employee_Name__c,
+                Email__c              = req.Personal_Email__c,
+                Phone__c              = req.Phone__c,
+                Department__c         = req.Department__c,
+                Job_Title__c          = req.Job_Title__c,
+                Employment_Type__c    = req.Employment_Type__c,
+                Location__c           = req.Location__c,
+                Work_Mode__c          = req.Work_Mode__c,
+                Start_Date__c         = req.Start_Date__c,
+                Reporting_Manager__c  = req.Reporting_Manager__c,
+                Onboarding_Request__c = req.Id
+            ));
+        }
+
+        if (!empsToCreate.isEmpty()) {
+            insert empsToCreate;
         }
     }
 

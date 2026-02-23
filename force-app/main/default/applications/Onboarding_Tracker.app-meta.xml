@@ -31,6 +31,7 @@
     <tabs>New_Onboarding_Request_Tab</tabs>
     <tabs>Onboarding_Request__c</tabs>
     <tabs>Onboarding_Task__c</tabs>
+    <tabs>Employee__c</tabs>
     <tabs>standard-report</tabs>
     <tabs>standard-Dashboard</tabs>
     <uiType>Lightning</uiType>

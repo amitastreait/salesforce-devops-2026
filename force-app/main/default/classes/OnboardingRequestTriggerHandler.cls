@@ -17,11 +17,16 @@ public with sharing class OnboardingRequestTriggerHandler {
         System.TriggerOperation operationType
     ) {
         switch on operationType {
+            when BEFORE_UPDATE {
+                // Block Status='Completed' if any tasks are still open (not completed or rejected)
+                OnboardingService.validateCompletion(newList, oldMap);
+            }
             when AFTER_INSERT {
                 OnboardingService.createDefaultTasks(newList);
             }
             when AFTER_UPDATE {
-                // Reserved for future logic (e.g., status-change side effects)
+                // Create Employee__c record when request transitions to Completed
+                OnboardingService.handleCompletionSideEffects(newList, oldMap);
             }
         }
     }

@@ -204,7 +204,17 @@ private class OnboardingServiceTest {
         Onboarding_Request__c cancelledReq = makeRequest('Cancelled Emp', 5);
         insert new List<Onboarding_Request__c>{ activeReq, completedReq, cancelledReq };
 
-        update new Onboarding_Request__c(Id = completedReq.Id, Status__c = 'Completed', Completion_Percentage__c = 100);
+        // Complete all tasks for completedReq so validation trigger allows Status='Completed'
+        List<Onboarding_Task__c> tasksToComplete = [
+            SELECT Id FROM Onboarding_Task__c WHERE Onboarding_Request__c = :completedReq.Id
+        ];
+        for (Onboarding_Task__c t : tasksToComplete) {
+            t.Is_Completed__c   = true;
+            t.Completed_Date__c = Date.today();
+        }
+        if (!tasksToComplete.isEmpty()) update tasksToComplete;
+        // Status auto-transitions to 'Completed' via trigger after all tasks are done
+
         update new Onboarding_Request__c(Id = cancelledReq.Id, Status__c = 'Cancelled');
 
         Test.startTest();
@@ -242,8 +252,14 @@ private class OnboardingServiceTest {
         Onboarding_Request__c req = makeRequest('Grace Ho', 10);
         insert req;
 
-        // Set to Completed — should still be returned
-        update new Onboarding_Request__c(Id = req.Id, Status__c = 'Completed', Completion_Percentage__c = 100);
+        // Complete all tasks so the validation trigger allows Status='Completed'
+        List<Onboarding_Task__c> allTasks = [SELECT Id FROM Onboarding_Task__c WHERE Onboarding_Request__c = :req.Id];
+        for (Onboarding_Task__c t : allTasks) {
+            t.Is_Completed__c   = true;
+            t.Completed_Date__c = Date.today();
+        }
+        if (!allTasks.isEmpty()) update allTasks;
+        // Status auto-transitions to 'Completed' via trigger
 
         Test.startTest();
         List<Onboarding_Request__c> results = OnboardingService.getAllRequestsWithTasks();
@@ -346,7 +362,15 @@ private class OnboardingServiceTest {
         Onboarding_Request__c cancelReq = makeRequest('Cancel Emp', 3);
         insert new List<Onboarding_Request__c>{ compReq, cancelReq };
 
-        update new Onboarding_Request__c(Id = compReq.Id,   Status__c = 'Completed', Completion_Percentage__c = 100);
+        // Complete all tasks for compReq so validation trigger allows Status='Completed'
+        List<Onboarding_Task__c> compTasks = [SELECT Id FROM Onboarding_Task__c WHERE Onboarding_Request__c = :compReq.Id];
+        for (Onboarding_Task__c t : compTasks) {
+            t.Is_Completed__c   = true;
+            t.Completed_Date__c = Date.today();
+        }
+        if (!compTasks.isEmpty()) update compTasks;
+        // Status auto-transitions to 'Completed' via trigger
+
         update new Onboarding_Request__c(Id = cancelReq.Id, Status__c = 'Cancelled');
 
         Test.startTest();
@@ -521,6 +545,113 @@ private class OnboardingServiceTest {
         Test.stopTest();
 
         Assert.areEqual(0, results.size(), 'New request should have no comments');
+    }
+
+    // ─── validateCompletion ───────────────────────────────────────────────────
+
+    @IsTest
+    static void validateCompletion_blocksCompletionWithOpenTasks() {
+        Onboarding_Request__c req = makeRequest('Block Emp', 5);
+        req.Status__c = 'In Progress';
+        insert req;
+        // Tasks auto-created but NOT completed
+
+        Boolean errorThrown = false;
+        Test.startTest();
+        try {
+            update new Onboarding_Request__c(Id = req.Id, Status__c = 'Completed');
+        } catch (DmlException ex) {
+            errorThrown = ex.getMessage().containsIgnoreCase('Cannot mark as Completed');
+        }
+        Test.stopTest();
+
+        Assert.isTrue(errorThrown, 'Should block Completed status when tasks are open');
+    }
+
+    @IsTest
+    static void validateCompletion_allowsCompletionWhenAllTasksDone() {
+        Onboarding_Request__c req = makeRequest('All Done Emp', 5);
+        insert req;
+        List<Onboarding_Task__c> tasks = fetchTasks(req.Id);
+        for (Onboarding_Task__c t : tasks) {
+            t.Is_Completed__c   = true;
+            t.Completed_Date__c = Date.today();
+        }
+        update tasks; // This auto-sets Status='Completed' via trigger
+
+        Test.startTest();
+        Onboarding_Request__c result = [SELECT Status__c FROM Onboarding_Request__c WHERE Id = :req.Id];
+        Test.stopTest();
+
+        Assert.areEqual('Completed', result.Status__c, 'Status should be Completed when all tasks done');
+    }
+
+    @IsTest
+    static void validateCompletion_allowsCompletionWhenAllTasksRejected() {
+        Onboarding_Request__c req = makeRequest('Rejected Tasks Emp', 5);
+        insert req;
+        List<Onboarding_Task__c> tasks = fetchTasks(req.Id);
+        for (Onboarding_Task__c t : tasks) {
+            t.Is_Rejected__c = true;
+        }
+
+        Test.startTest();
+        update tasks; // All rejected → pct=100 → Status auto-transitions to Completed
+        Test.stopTest();
+
+        Onboarding_Request__c result = [SELECT Status__c FROM Onboarding_Request__c WHERE Id = :req.Id];
+        Assert.areEqual('Completed', result.Status__c, 'Status should be Completed when all tasks rejected');
+    }
+
+    // ─── handleCompletionSideEffects ─────────────────────────────────────────
+
+    @IsTest
+    static void handleCompletionSideEffects_createsEmployeeRecord() {
+        Onboarding_Request__c req = new Onboarding_Request__c(
+            Employee_Name__c   = 'New Hire Test',
+            Start_Date__c      = Date.today().addDays(5),
+            Department__c      = 'IT',
+            Status__c          = 'New',
+            Job_Title__c       = 'Developer',
+            Employment_Type__c = 'Full-Time',
+            Location__c        = 'New York',
+            Work_Mode__c       = 'Hybrid'
+        );
+        insert req;
+
+        List<Onboarding_Task__c> tasks = fetchTasks(req.Id);
+        for (Onboarding_Task__c t : tasks) {
+            t.Is_Completed__c   = true;
+            t.Completed_Date__c = Date.today();
+        }
+
+        Test.startTest();
+        update tasks; // Triggers recalculate → Status='Completed' → Employee__c created
+        Test.stopTest();
+
+        List<Employee__c> employees = [
+            SELECT Employee_Name__c, Department__c, Job_Title__c, Employment_Type__c,
+                   Location__c, Work_Mode__c, Onboarding_Request__c
+            FROM   Employee__c
+            WHERE  Onboarding_Request__c = :req.Id
+        ];
+        Assert.areEqual(1, employees.size(), 'One Employee__c record should be created');
+        Assert.areEqual('New Hire Test', employees[0].Employee_Name__c, 'Employee name should match');
+        Assert.areEqual('IT',            employees[0].Department__c,    'Department should match');
+        Assert.areEqual('Developer',     employees[0].Job_Title__c,     'Job title should match');
+    }
+
+    @IsTest
+    static void handleCompletionSideEffects_noEmployeeIfNotCompleted() {
+        Onboarding_Request__c req = makeRequest('No Transition Emp', 5);
+        insert req;
+
+        Test.startTest();
+        OnboardingService.updateRequestStatus(req.Id, 'In Progress');
+        Test.stopTest();
+
+        Integer empCount = [SELECT COUNT() FROM Employee__c WHERE Onboarding_Request__c = :req.Id];
+        Assert.areEqual(0, empCount, 'No Employee__c should be created when status is not Completed');
     }
 
     // ─── updateRequestStatus ──────────────────────────────────────────────────

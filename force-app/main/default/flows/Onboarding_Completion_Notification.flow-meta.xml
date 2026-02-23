@@ -4,14 +4,14 @@
         <name>Post_Chatter_Update</name>
         <label>Post Chatter Update</label>
         <locationX>176</locationX>
-        <locationY>382</locationY>
+        <locationY>490</locationY>
         <actionName>chatterPost</actionName>
         <actionType>chatterPost</actionType>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>text</name>
             <value>
-                <stringValue>Onboarding for {!$Record.Employee_Name__c} is now COMPLETE! All tasks have been finished. Welcome to the team!</stringValue>
+                <stringValue>Onboarding for {!$Record.Employee_Name__c} ({!$Record.Job_Title__c} — {!$Record.Department__c}) is now COMPLETE! An Employee record has been automatically created. Welcome to the team!</stringValue>
             </value>
         </inputParameters>
         <inputParameters>
@@ -26,7 +26,7 @@
         <name>Send_Completion_Email</name>
         <label>Send Completion Email to HR</label>
         <locationX>176</locationX>
-        <locationY>258</locationY>
+        <locationY>370</locationY>
         <actionName>emailSimple</actionName>
         <actionType>emailSimple</actionType>
         <connector>
@@ -42,7 +42,7 @@
         <inputParameters>
             <name>emailSubject</name>
             <value>
-                <stringValue>Onboarding Complete: {!$Record.Employee_Name__c}</stringValue>
+                <stringValue>Onboarding Complete: {!$Record.Employee_Name__c} — {!$Record.Job_Title__c}, {!$Record.Department__c}</stringValue>
             </value>
         </inputParameters>
         <inputParameters>
@@ -50,13 +50,36 @@
             <value>
                 <stringValue>Hi {!hrUserName},
 
-Great news! The onboarding process for {!$Record.Employee_Name__c} ({!$Record.Department__c}) has been marked as Completed.
+Great news! The onboarding for {!$Record.Employee_Name__c} has been completed successfully and an Employee record has been automatically created in Salesforce.
 
-Onboarding Request: {!$Record.Name}
-Start Date: {!$Record.Start_Date__c}
-Completion: 100%
+------------------------------------------------------------
+EMPLOYEE DETAILS
+------------------------------------------------------------
+Name             : {!$Record.Employee_Name__c}
+Job Title        : {!$Record.Job_Title__c}
+Department       : {!$Record.Department__c}
+Employment Type  : {!$Record.Employment_Type__c}
 
-All tasks have been completed successfully. Welcome aboard!
+------------------------------------------------------------
+WORK SETUP
+------------------------------------------------------------
+Start Date       : {!$Record.Start_Date__c}
+Location         : {!$Record.Location__c}
+Work Mode        : {!$Record.Work_Mode__c}
+
+------------------------------------------------------------
+CONTACT INFORMATION
+------------------------------------------------------------
+Personal Email   : {!$Record.Personal_Email__c}
+Phone            : {!$Record.Phone__c}
+
+------------------------------------------------------------
+Onboarding Reference : {!$Record.Name}
+Completion           : 100%
+
+Please review the new Employee record in Salesforce and update any additional details as needed.
+
+Welcome {!$Record.Employee_Name__c} to the team!
 
 — Salesforce Onboarding System</stringValue>
             </value>
@@ -65,7 +88,32 @@ All tasks have been completed successfully. Welcome aboard!
     </actionCalls>
     <apiVersion>62.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
-    <description>Record-Triggered Flow: Fires when an Onboarding Request Status changes to Completed. Sends an email alert to the Assigned HR user and posts a Chatter message on the record.</description>
+    <decisions>
+        <name>Has_Assigned_HR</name>
+        <label>Has Assigned HR?</label>
+        <locationX>176</locationX>
+        <locationY>252</locationY>
+        <defaultConnector>
+            <targetReference>Post_Chatter_Update</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No HR Assigned — Skip Email</defaultConnectorLabel>
+        <rules>
+            <name>HR_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>hrUserEmail</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Send_Completion_Email</targetReference>
+            </connector>
+            <label>HR Email Found</label>
+        </rules>
+    </decisions>
+    <description>Record-Triggered Flow: Fires when an Onboarding Request Status changes to Completed. Sends a detailed email alert to the Assigned HR user and posts a Chatter message on the record.</description>
     <environments>Default</environments>
     <interviewLabel>Onboarding Completion Notification {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Onboarding Completion Notification</label>
@@ -77,7 +125,7 @@ All tasks have been completed successfully. Welcome aboard!
         <locationY>134</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Send_Completion_Email</targetReference>
+            <targetReference>Has_Assigned_HR</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>

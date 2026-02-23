@@ -56,6 +56,7 @@
 		<name>Group</name>
 	</types>
 	<types>
+		<members>Employee__c-Employee Layout</members>
 		<members>Onboarding_Comment__c-Onboarding Comment Layout</members>
 		<members>Onboarding_Request__c-Onboarding Request Layout</members>
 		<members>Onboarding_Task_Template__mdt-Onboarding Task Template Layout</members>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Onboarding_Task_Compact</fullName>
+    <fields>Name</fields>
+    <fields>Onboarding_Request__c</fields>
+    <fields>Category__c</fields>
+    <fields>Due_Date__c</fields>
+    <fields>Is_Completed__c</fields>
+    <fields>Is_Rejected__c</fields>
+    <fields>Assigned_To__c</fields>
+    <label>Onboarding Task Compact Layout</label>
+</CompactLayout>

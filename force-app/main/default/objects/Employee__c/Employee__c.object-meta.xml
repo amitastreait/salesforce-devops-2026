@@ -141,28 +141,26 @@
         <type>Default</type>
     </actionOverrides>
     <allowInChatterGroups>false</allowInChatterGroups>
-    <compactLayoutAssignment>Onboarding_Request_Compact</compactLayoutAssignment>
+    <compactLayoutAssignment>Employee_Compact</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
-    <description>Tracks onboarding requests for new hires, including tasks, status, and completion progress.</description>
-    <enableActivities>true</enableActivities>
+    <description>Represents an employee record automatically created when an Onboarding Request is marked as Completed. Contains the core profile of the new hire after onboarding is finished.</description>
+    <enableActivities>false</enableActivities>
     <enableBulkApi>true</enableBulkApi>
-    <enableFeeds>true</enableFeeds>
-    <enableHistory>true</enableHistory>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
     <enableLicensing>false</enableLicensing>
     <enableReports>true</enableReports>
     <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <externalSharingModel>Private</externalSharingModel>
-    <label>Onboarding Request</label>
+    <label>Employee</label>
     <nameField>
-        <displayFormat>OBR-{0000}</displayFormat>
-        <label>Onboarding Request Name</label>
-        <trackFeedHistory>false</trackFeedHistory>
-        <trackHistory>false</trackHistory>
+        <displayFormat>EMP-{0000}</displayFormat>
+        <label>Employee Number</label>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Onboarding Requests</pluralLabel>
+    <pluralLabel>Employees</pluralLabel>
     <searchLayouts></searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
