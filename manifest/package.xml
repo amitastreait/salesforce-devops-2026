@@ -38,6 +38,14 @@
 		<name>CustomTab</name>
 	</types>
 	<types>
+		<members>Onboarding/jBfALYJJYOjCpmjALGkhUBIoqaZfDw</members>
+		<name>Dashboard</name>
+	</types>
+	<types>
+		<members>Onboarding</members>
+		<name>DashboardFolder</name>
+	</types>
+	<types>
 		<members>New_Onboarding_Request_Page</members>
 		<members>Onboarding_Dashboard_Page</members>
 		<members>Onboarding_Request_Record_Page</members>
@@ -66,6 +74,22 @@
 	<types>
 		<members>*</members>
 		<name>Queue</name>
+	</types>
+	<types>
+		<members>Onboarding/Employee_Directory_POo</members>
+		<members>Onboarding/Onboarding_Requests_by_Department_JNw</members>
+		<members>Onboarding/Onboarding_Requests_by_Status_r7A</members>
+		<members>Onboarding/Open_Onboarding_Tasks_cyu</members>
+		<members>Onboarding/Overdue_Onboarding_Tasks_8HV</members>
+		<name>Report</name>
+	</types>
+	<types>
+		<members>Onboarding</members>
+		<name>ReportFolder</name>
+	</types>
+	<types>
+		<members>Onboarding_Managers</members>
+		<name>Role</name>
 	</types>
 	<version>66.0</version>
 </Package>
