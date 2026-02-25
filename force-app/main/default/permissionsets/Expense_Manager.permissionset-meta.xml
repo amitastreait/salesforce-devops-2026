@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Expense Manager</label>
+    <hasActivationRequired>false</hasActivationRequired>
     <fieldPermissions>
         <editable>true</editable>
         <field>Account.Description</field>
@@ -30,8 +32,6 @@
         <field>Expense_Request__c.Status__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <hasActivationRequired>false</hasActivationRequired>
-    <label>Expense Manager</label>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>false</allowDelete>
