@@ -36,6 +36,11 @@
                 <default>false</default>
                 <label>Marketing</label>
             </value>
+            <value>
+                <fullName>Operations</fullName>
+                <default>false</default>
+                <label>Operations</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>
