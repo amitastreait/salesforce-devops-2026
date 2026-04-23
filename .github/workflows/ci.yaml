@@ -4,7 +4,7 @@ run-name: "My First Run"
 on:
   push:
   pull_request:
-  issue_comment: 
+  issue_comment:
 
 jobs: # A workflow run is made up of one or more jobs
   build:

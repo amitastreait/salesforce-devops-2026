@@ -1,0 +1,25 @@
+name: "Salesforce Pipeline"
+run-name: "Salesforce Pipeline Run"
+
+on:
+    push:
+
+jobs:
+    setup-salesforce: 
+        name: "Setup Salesforce"
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: "setup Salesforce CLI"
+              run: npm install --global @salesforce/cli@latest
+
+            - name: "Check sf cli version"
+              run: sf --version
+
+            - name: "Install Salesforce Code Analyzer"
+              run: |
+                sf --help
+                sf plugins install code-analyzer
+
+            - name: "Authenticate with Salesforce"
+              run: sf org login sfdx-url --sfdx-url-file tmp/authFile.txt --set-default --alias TRAIL_PROD_ORG
