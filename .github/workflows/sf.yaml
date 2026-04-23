@@ -50,6 +50,15 @@ jobs:
                 results-artifact-name: salesforce-code-analyzer-results
                 github-token: ${{ github.token }}
 
+            # Option 1: Quality gate on ALL files in the repository
+            - name: Fail on Critical/High Violations (All Files)
+              if: |
+                steps.run-code-analyzer.outputs.exit-code > 0 ||
+                steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+                steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
+                steps.run-code-analyzer.outputs.num-violations > 10
+              run: exit 1
+
             - name: "Authenticate with Salesforce"
               run: sf org login sfdx-url --sfdx-url-file tmp/authFile.txt --set-default --alias TRAIL_PROD_ORG
 
