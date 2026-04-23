@@ -34,4 +34,4 @@ jobs:
               run: sf project deploy start --source-dir force-app/main/default --target-org TRAIL_PROD_ORG --wait 45
             
             - name: "Assign Permission Set"
-              run: sf org assign permset --name Onboarding_Manager --on-behalf-of TRAIL_PROD_ORG --target-org TRAIL_PROD_ORG --wait 5
+              run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org TRAIL_PROD_ORG
