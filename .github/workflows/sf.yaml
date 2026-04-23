@@ -1,0 +1,69 @@
+name: "Salesforce Pipeline"
+run-name: "Salesforce Pipeline Run"
+
+on:
+    push:
+
+jobs:
+    setup-salesforce: 
+        name: "Setup Salesforce"
+        runs-on: ubuntu-latest
+
+        steps:
+
+            - name: 'Checkout code'
+              uses: actions/checkout@v6.0.2
+              with:
+                fetch-depth: 0
+
+            # PREREQUISITES - Only needed if the runner doesn't already satisfy these requirements.
+            - name: Ensure node v20.9.0 or greater
+              uses: actions/setup-node@v5
+              with:
+                node-version: '>=20.9.0'
+            - name: Ensure java v11 or greater
+              uses: actions/setup-java@v5
+              with:
+                java-version: '>=11'
+                distribution: 'zulu'
+            - name: Ensure python v3.10 or greater
+              uses: actions/setup-python@v6
+              with:
+                python-version: '>=3.10'
+
+            - name: "setup Salesforce CLI"
+              run: npm install --global @salesforce/cli@latest
+
+            - name: "Check sf cli version"
+              run: sf --version
+
+            - name: "Install Salesforce Code Analyzer"
+              run: |
+                sf --help
+                sf plugins install code-analyzer
+            
+            - name: Run Salesforce Code Analyzer
+              id: run-code-analyzer
+              uses: forcedotcom/run-code-analyzer@v2
+              with:
+                run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
+                results-artifact-name: salesforce-code-analyzer-results
+                github-token: ${{ github.token }}
+
+            # Option 1: Quality gate on ALL files in the repository
+            - name: Fail on Critical/High Violations (All Files)
+              if: |
+                steps.run-code-analyzer.outputs.exit-code > 0 ||
+                steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+                steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
+                steps.run-code-analyzer.outputs.num-violations > 10
+              run: exit 1
+
+            - name: "Authenticate with Salesforce"
+              run: sf org login sfdx-url --sfdx-url-file tmp/authFile.txt --set-default --alias TRAIL_PROD_ORG
+
+            - name: "Deploy to Salesforce org"
+              run: sf project deploy start --source-dir force-app/main/default --target-org TRAIL_PROD_ORG --wait 45
+            
+            - name: "Assign Permission Set"
+              run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org TRAIL_PROD_ORG
