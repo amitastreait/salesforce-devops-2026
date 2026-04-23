@@ -6,5 +6,5 @@
     <mayForecastManagerShare>false</mayForecastManagerShare>
     <name>Onboarding Managers</name>
     <opportunityAccessLevel>Edit</opportunityAccessLevel>
-    <parentRole>SVPHumanResources</parentRole>
+    <parentRole>CEO</parentRole>
 </Role>
