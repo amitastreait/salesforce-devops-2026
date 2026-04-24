@@ -11,20 +11,6 @@ env:
   SF_CLI_VERSION: latest
 
 jobs:
-    setup-salesforce-job-new:
-      name: "Setup Salesforce V2"
-      runs-on: ubuntu-latest
-      steps:
-        - name: 'Checkout code'
-          uses: actions/checkout@v6.0.2
-          with:
-            fetch-depth: 0
-        - name: 'Print ENV Variables'
-          run: |
-            echo "ORG_DEFAULT_ALIAS is $ORG_DEFAULT_ALIAS"
-            echo "Node Version is $NODE_VERSION"
-            echo "Java Version is $JAVA_VERSION"
-
     setup-salesforce: 
         name: "Setup Salesforce"
         runs-on: ubuntu-latest
