@@ -4,13 +4,23 @@ run-name: "Salesforce Pipeline Run"
 on:
     push:
 
+env:
+  ORG_DEFAULT_ALIAS: PROD_ORG
+  NODE_VERSION: ">=20.9.0"
+  JAVA_VERSION: ">=11"
+  SF_CLI_VERSION: latest
+
 jobs:
     setup-salesforce: 
         name: "Setup Salesforce"
         runs-on: ubuntu-latest
+        environment: production
+        env:
+          PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
+          ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
+          NODE_VERSION: ${{ vars.NODE_VERSION }}
 
         steps:
-
             - name: 'Checkout code'
               uses: actions/checkout@v6.0.2
               with:
@@ -20,19 +30,24 @@ jobs:
             - name: Ensure node v20.9.0 or greater
               uses: actions/setup-node@v5
               with:
-                node-version: '>=20.9.0'
+                node-version: ${{ env.NODE_VERSION }}
             - name: Ensure java v11 or greater
               uses: actions/setup-java@v5
               with:
-                java-version: '>=11'
+                java-version: ${{ env.JAVA_VERSION }}
                 distribution: 'zulu'
             - name: Ensure python v3.10 or greater
               uses: actions/setup-python@v6
               with:
-                python-version: '>=3.10'
+                python-version: ${{ env.PYTHON_VERSION }}
 
             - name: "setup Salesforce CLI"
-              run: npm install --global @salesforce/cli@latest
+              run: npm install --global @salesforce/cli@${{ env.SF_CLI_VERSION }}
+              env:
+                SF_CLI_VERSION: latest
+                PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
+                ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
+                NODE_VERSION: ${{ vars.NODE_VERSION }}
 
             - name: "Check sf cli version"
               run: sf --version
@@ -40,7 +55,22 @@ jobs:
             - name: "Install Salesforce Code Analyzer"
               run: |
                 sf --help
-                sf plugins install code-analyzer
+                sf plugins install code-analyzer@${{ env.SF_CLI_VERSION }}
+
+            - name: "Authenticate with Salesforce"
+              env:
+                PROD_AUTH_URL: ${{ secrets.PROD_SFDX_AUTH_URL }} 
+                SFDX_AUTH_FILE_PATH: ${{ secrets.SFDX_AUTH_FILE_PATH }}
+              # $RUNNER_TEMP/prod-auth.txt
+              # /temp/prod-auth.txt
+              # $RUNNER_TEMP resolves to /home/runner/work/_temp/
+              run: |
+                echo "${{ env.PROD_AUTH_URL }}" > "${{ env.SFDX_AUTH_FILE_PATH }}"
+                sf org login sfdx-url \
+                  --sfdx-url-file ${{ env.SFDX_AUTH_FILE_PATH }} \
+                  --set-default \
+                  --alias "${{ env.ORG_DEFAULT_ALIAS }}"
+                rm ${{ env.SFDX_AUTH_FILE_PATH }}
             
             - name: Run Salesforce Code Analyzer
               id: run-code-analyzer
@@ -60,10 +90,16 @@ jobs:
               run: exit 1
 
             - name: "Authenticate with Salesforce"
-              run: sf org login sfdx-url --sfdx-url-file tmp/authFile.txt --set-default --alias TRAIL_PROD_ORG
+              run: |
+                # Read the Secret
+                echo ${{ secrets.PROD_SFDX_AUTH_URL }} > ${{ secrets.SFDX_AUTH_FILE_PATH }}
+                sf org login sfdx-url --sfdx-url-file \
+                  ${{ secrets.SFDX_AUTH_FILE_PATH }} \
+                  --set-default --alias ${{ env.ORG_DEFAULT_ALIAS }}
+                rm ${{ secrets.SFDX_AUTH_FILE_PATH }}
 
             - name: "Deploy to Salesforce org"
-              run: sf project deploy start --source-dir force-app/main/default --target-org TRAIL_PROD_ORG --wait 45
+              run: sf project deploy start --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
             
             - name: "Assign Permission Set"
-              run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org TRAIL_PROD_ORG
+              run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org ${{ env.ORG_DEFAULT_ALIAS }}
