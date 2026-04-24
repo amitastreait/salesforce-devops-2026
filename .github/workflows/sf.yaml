@@ -9,6 +9,7 @@ env:
   NODE_VERSION: ">=20.9.0"
   JAVA_VERSION: ">=11"
   SF_CLI_VERSION: latest
+  ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
 
 jobs:
     setup-salesforce: 
@@ -50,7 +51,9 @@ jobs:
                 NODE_VERSION: ${{ vars.NODE_VERSION }}
 
             - name: "Check sf cli version"
-              run: sf --version
+              run: |
+                sf --version
+                echo "Variable from the GitHub Org is ${{ env.ORG_VARIABLE }}"
 
             - name: "Install Salesforce Code Analyzer"
               run: |
