@@ -61,8 +61,9 @@ jobs:
               env:
                 PROD_AUTH_URL: ${{ secrets.PROD_SFDX_AUTH_URL }} 
                 SFDX_AUTH_FILE_PATH: ${{ secrets.SFDX_AUTH_FILE_PATH }}
-              # $RUNNER_TEMP/prod-auth.txt
+        
               # /temp/prod-auth.txt
+              # $RUNNER_TEMP/prod-auth.txt
               # $RUNNER_TEMP resolves to /home/runner/work/_temp/
               run: |
                 echo "${{ env.PROD_AUTH_URL }}" > "${{ env.SFDX_AUTH_FILE_PATH }}"
