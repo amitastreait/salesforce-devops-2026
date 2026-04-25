@@ -2,6 +2,7 @@ name: "Salesforce Pipeline"
 run-name: "Salesforce Pipeline Run"
 
 on:
+    workflow_dispatch: #Manual Run the Pipeline
     push:
       paths:
         - 'force-app/**'
