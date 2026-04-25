@@ -5,6 +5,11 @@ on:
     push:
       paths:
         - 'force-app/**'
+      branches:
+        - hotfix/**
+        - release/**
+        - UAT
+        - integration
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
