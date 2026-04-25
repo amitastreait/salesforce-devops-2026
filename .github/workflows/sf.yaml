@@ -3,6 +3,8 @@ run-name: "Salesforce Pipeline Run"
 
 on:
     push:
+      paths:
+        - 'force-app/**'
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
