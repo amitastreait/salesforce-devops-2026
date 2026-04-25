@@ -40,9 +40,6 @@ async function start() {
             process.env.SOURCE_CLIENT_ID,
             process.env.SOURCE_USERNAME
         );
-
-        console.log('✅ Source JWT Auth success');
-
         /* =========================
            AUTH TARGET ORG
         ========================= */
@@ -82,7 +79,7 @@ async function start() {
                 ========================= */
                 await axios.post(
                     targetAuth.instance_url +
-                        '/services/data/v65.0/sobjects/Integration_Log__c',
+                    '/services/data/v65.0/sobjects/Integration_Log__c',
                     {
                         Event_Data__c: JSON.stringify(payload)
                     },
