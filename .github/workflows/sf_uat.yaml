@@ -1,13 +1,20 @@
-name: "Salesforce Pipeline"
-run-name: "Salesforce Pipeline Run"
+name: "Salesforce UAT Pipeline"
+run-name: "Salesforce UAT Pipeline Run"
 
 on:
-    workflow_dispatch: #Manual Run the Pipeline
     push:
       paths:
         - 'force-app/**'
       branches:
-        - feature/**
+        - UAT
+    pull_request:
+      types:
+        - open
+        - closed
+      paths:
+        - 'force-app/**'
+      branches:
+        - UAT
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
@@ -20,7 +27,7 @@ jobs:
     setup-salesforce: 
         name: "Setup Salesforce"
         runs-on: ubuntu-latest
-        environment: dev
+        environment: UAT
         env:
           PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
           ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
