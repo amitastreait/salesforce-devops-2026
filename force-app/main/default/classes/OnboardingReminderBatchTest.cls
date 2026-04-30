@@ -1,7 +1,6 @@
 /**
  * @description Tests for OnboardingReminderBatch.
- *              Verifies that the batch processes at-risk requests, skips requests
- *              without an assigned HR user, excludes completed requests, and that
+ *              Verifies that the batch processes at-risk requests, skips requests without an assigned HR user, excludes completed requests, and that
  *              the updated OnboardingReminderScheduler correctly enqueues the batch.
  */
 @IsTest

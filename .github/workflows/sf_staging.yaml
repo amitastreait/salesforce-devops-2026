@@ -1,12 +1,7 @@
-name: "Salesforce Staging Pipeline"
-run-name: "Salesforce Staging Pipeline Run"
+name: "Salesforce UAT Pipeline"
+run-name: "Salesforce UAT Pipeline Run"
 
 on:
-    push:
-      paths:
-        - 'force-app/**'
-      branches:
-        - staging
     pull_request:
       types:
         - open
@@ -14,124 +9,22 @@ on:
       paths:
         - 'force-app/**'
       branches:
-        - staging
+        - UAT
 
 env:
-  ORG_DEFAULT_ALIAS: PROD_ORG
+  ORG_DEFAULT_ALIAS: UAT_ORG
   NODE_VERSION: ">=20.9.0"
   JAVA_VERSION: ">=11"
   SF_CLI_VERSION: latest
   ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
 
 jobs:
-    setup-salesforce: 
-        name: "Setup Salesforce"
-        runs-on: ubuntu-latest
-        environment: staging
-        env:
-          PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
-          ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
-          NODE_VERSION: ${{ vars.NODE_VERSION }}
-          SF_CLI_VERSION: ${{ vars.SF_CLI_VERSION }}
-          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-          SLACK_API_KEY: ${{ secrets.SLACK_API_KEY }}
-
-        steps:
-            - name: 'Checkout code'
-              uses: actions/checkout@v6.0.2
-              with:
-                fetch-depth: 0
-
-            # PREREQUISITES - Only needed if the runner doesn't already satisfy these requirements.
-            - name: Ensure node v20.9.0 or greater
-              uses: actions/setup-node@v5
-              with:
-                node-version: ${{ env.NODE_VERSION }}
-            - name: Ensure java v11 or greater
-              uses: actions/setup-java@v5
-              with:
-                java-version: ${{ env.JAVA_VERSION }}
-                distribution: 'zulu'
-            - name: Ensure python v3.10 or greater
-              uses: actions/setup-python@v6
-              with:
-                python-version: ${{ env.PYTHON_VERSION }}
-
-            - name: "setup Salesforce CLI"
-              run: npm install --global @salesforce/cli@${{ env.SF_CLI_VERSION }}
-              env:
-                SF_CLI_VERSION: latest
-                PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
-                ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
-                NODE_VERSION: ${{ vars.NODE_VERSION }}
-
-            - name: "Check sf cli version"
-              run: |
-                sf --version
-                echo "Variable from the GitHub Org is ${{ env.ORG_VARIABLE }}"
-
-            - name: "Install Salesforce Code Analyzer"
-              run: |
-                sf --help
-                sf plugins install code-analyzer@${{ env.SF_CLI_VERSION }}
-
-            - name: "Decrypt the Encrypted File"
-              run:
-                openssl enc -nosalt -aes-256-cbc -d -in ${{ secrets.ENCRYPTION_KEY_FILE }} -out ${{ secrets.JWT_KEY_FILE }} -base64 -K ${{ secrets.DECRYPTION_KEY }} -iv ${{ secrets.DECRYPTION_IV }}
-
-            - name: "Authenticate with Salesforce"
-              run: |
-                sf org login jwt --client-id ${{ secrets.CONSUMER_KEY }} \
-                  --jwt-key-file ${{ secrets.JWT_KEY_FILE }} \
-                  --username ${{ secrets.DEPLOYMENT_USER_USERNAME }} \
-                  --set-default --alias ${{ vars.ORG_DEFAULT_ALIAS }} \
-                  --instance-url ${{ vars.HUB_LOGIN_URL }}
-            #- name: "Authenticate with Salesforce"
-            #  env:
-            #    PROD_AUTH_URL: ${{ secrets.PROD_SFDX_AUTH_URL }} 
-            #    SFDX_AUTH_FILE_PATH: ${{ secrets.SFDX_AUTH_FILE_PATH }}
-        
-              # /temp/prod-auth.txt
-              # /tmp/prod-auth.txt
-              # $RUNNER_TEMP/prod-auth.txt
-              # $RUNNER_TEMP resolves to /home/runner/work/_temp/
-              #run: |
-              #  echo "${{ env.PROD_AUTH_URL }}" > "${{ env.SFDX_AUTH_FILE_PATH }}"
-              #  sf org login sfdx-url \
-              #    --sfdx-url-file ${{ env.SFDX_AUTH_FILE_PATH }} \
-              #    --set-default \
-              #    --alias "${{ env.ORG_DEFAULT_ALIAS }}"
-              #  rm ${{ env.SFDX_AUTH_FILE_PATH }}
-            
-            - name: Run Salesforce Code Analyzer
-              id: run-code-analyzer
-              uses: forcedotcom/run-code-analyzer@v2
-              with:
-                run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
-                results-artifact-name: salesforce-code-analyzer-results
-                github-token: ${{ github.token }}
-
-            # Option 1: Quality gate on ALL files in the repository
-            - name: Fail on Critical/High Violations (All Files)
-              if: |
-                steps.run-code-analyzer.outputs.exit-code > 0 ||
-                steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
-                steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
-                steps.run-code-analyzer.outputs.num-violations > 10
-              run: exit 0
-
-            - name: "Authenticate with Salesforce"
-              run: |
-                # Read the Secret
-                echo ${{ secrets.PROD_SFDX_AUTH_URL }} > ${{ secrets.SFDX_AUTH_FILE_PATH }}
-                sf org login sfdx-url --sfdx-url-file \
-                  ${{ secrets.SFDX_AUTH_FILE_PATH }} \
-                  --set-default --alias ${{ env.ORG_DEFAULT_ALIAS }}
-                rm ${{ secrets.SFDX_AUTH_FILE_PATH }}
-
-            - name: "Deploy to Salesforce org"
-              run: sf project deploy start --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
-            
-            #- name: "Assign Permission Set"
-            #  run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org ${{ env.ORG_DEFAULT_ALIAS }}
+  build-salesforce: 
+    name: "Build & Validate"
+    uses: "./.github/workflows/template.yaml"
+    with:
+      envionment: UAT
+      runner: macos-latest
+    secrets: inherit
+    #secrets: 
+    #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
