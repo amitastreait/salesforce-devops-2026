@@ -2,6 +2,8 @@
 
 This repository uses GitHub Actions to automate Salesforce deployments across four environments: **Dev**, **Staging**, **UAT**, and **Production**. Every pipeline follows the same steps: environment setup → JWT authentication → static code analysis → deployment.
 
+[![Salesforce Pipeline](https://github.com/SFDCPantherV1/salesforce-devops-2026/actions/workflows/sf.yaml/badge.svg)](https://github.com/SFDCPantherV1/salesforce-devops-2026/actions/workflows/sf.yaml)
+
 ---
 
 ## Pipeline Overview

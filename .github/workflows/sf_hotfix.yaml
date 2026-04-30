@@ -1,12 +1,7 @@
-name: "Salesforce UAT Pipeline"
-run-name: "Salesforce UAT Pipeline Run"
+name: "Salesforce Hotfix Pipeline"
+run-name: "Salesforce Hotfix Pipeline Run"
 
 on:
-    push:
-      paths:
-        - 'force-app/**'
-      branches:
-        - UAT
     pull_request:
       types:
         - open
@@ -14,7 +9,7 @@ on:
       paths:
         - 'force-app/**'
       branches:
-        - UAT
+        - hotfix
 
 env:
   ORG_DEFAULT_ALIAS: UAT_ORG
@@ -28,7 +23,7 @@ jobs:
     name: "Build & Validate"
     uses: "./.github/workflows/template.yaml"
     with:
-      envionment: UAT
+      envionment: hotfix
       runner: macos-latest
     secrets: inherit
     #secrets: 
