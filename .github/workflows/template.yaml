@@ -13,18 +13,18 @@ on:
     secrets:
       SLACK_WEBHOOK_URL:
         required: false
-      ENCRYPTION_KEY_FILE:
-        required: true
-      JWT_KEY_FILE:
-        required: true
-      DECRYPTION_KEY:
-        required: true
-      DECRYPTION_IV:
-        required: true
-      DEPLOYMENT_USER_USERNAME:
-        required: true
-      CONSUMER_KEY:
-        required: true
+      #ENCRYPTION_KEY_FILE:
+      #  required: true
+      #JWT_KEY_FILE:
+      #  required: true
+      #DECRYPTION_KEY:
+      #  required: true
+      #DECRYPTION_IV:
+      #  required: true
+      #DEPLOYMENT_USER_USERNAME:
+      #  required: true
+      #CONSUMER_KEY:
+      #  required: true
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
