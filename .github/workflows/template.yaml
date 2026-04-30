@@ -143,6 +143,7 @@ jobs:
 
       - name: "Deploy to Salesforce org"
         run: sf project deploy start --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+        run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
       #- name: "Assign Permission Set"
       #  run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org ${{ env.ORG_DEFAULT_ALIAS }}
