@@ -27,10 +27,10 @@ private class OnboardingReminderBatchTest {
         insertRequest(true);
 
         Test.startTest();
-        Database.executeBatch(new OnboardingReminderBatch(), 50);
+            Database.executeBatch(new OnboardingReminderBatch(), 50);
         Test.stopTest();
 
-        Assert.isTrue(true, 'Batch with a remindable request should complete without exception');
+        Assert.isTrue(true, 'Batch with a remindable request, should complete without exception');
     }
 
     @IsTest

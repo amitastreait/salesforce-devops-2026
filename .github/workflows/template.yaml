@@ -141,14 +141,14 @@ jobs:
           steps.run-code-analyzer.outputs.num-violations > 10
         run: exit 0
 
-      - name: "Authenticate with Salesforce"
-        run: |
-          # Read the Secret
-          echo ${{ secrets.PROD_SFDX_AUTH_URL }} > ${{ secrets.SFDX_AUTH_FILE_PATH }}
-          sf org login sfdx-url --sfdx-url-file \
-            ${{ secrets.SFDX_AUTH_FILE_PATH }} \
-            --set-default --alias ${{ env.ORG_DEFAULT_ALIAS }}
-          rm ${{ secrets.SFDX_AUTH_FILE_PATH }}
+      #- name: "Authenticate with Salesforce"
+      #  run: |
+      #    # Read the Secret
+      #    echo ${{ secrets.PROD_SFDX_AUTH_URL }} > ${{ secrets.SFDX_AUTH_FILE_PATH }}
+      #    sf org login sfdx-url --sfdx-url-file \
+      #      ${{ secrets.SFDX_AUTH_FILE_PATH }} \
+      #      --set-default --alias ${{ env.ORG_DEFAULT_ALIAS }}
+      #    rm ${{ secrets.SFDX_AUTH_FILE_PATH }}
 
       - name: "Deploy to Salesforce org"
         run: sf project deploy start --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
