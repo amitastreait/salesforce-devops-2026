@@ -32,6 +32,7 @@ env:
   JAVA_VERSION: ">=11"
   SF_CLI_VERSION: latest
   ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
+  TEST_LEVEL: RunSpecifiedTests
 
 jobs:
   build: 
@@ -150,8 +151,25 @@ jobs:
       #      --set-default --alias ${{ env.ORG_DEFAULT_ALIAS }}
       #    rm ${{ secrets.SFDX_AUTH_FILE_PATH }}
 
-      - name: "Deploy to Salesforce org"
-        run: sf project deploy start --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+      - name: "Deploy to Salesforce ORG - With Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' }}
+        run: sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
+          --tests ${{ env.apex_test_classes }} \
+          --source-dir force-app/main/default \
+          --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+
+      - name: "Deploy to Salesforce ORG - RunRelevantTests"
+        if: ${{ env.apex_test_classes = 'RunRelevantTests' }}
+        run: sf project deploy start --test-level RunRelevantTests \
+          --source-dir force-app/main/default \
+          --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+
+      - name: "Deploy to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' }}
+        run: sf project deploy start \
+          --source-dir force-app/main/default \
+          --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
+          --wait 45
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
       #- name: "Assign Permission Set"
