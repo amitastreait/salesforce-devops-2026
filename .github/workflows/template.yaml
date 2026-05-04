@@ -159,7 +159,7 @@ jobs:
           --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       - name: "Deploy to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes = 'RunRelevantTests' }}
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' }}
         run: sf project deploy start --test-level RunRelevantTests \
           --source-dir force-app/main/default \
           --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
