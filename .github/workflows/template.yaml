@@ -96,6 +96,13 @@ jobs:
         run: |
           sf --help
           sf plugins install code-analyzer@${{ env.SF_CLI_VERSION }}
+      
+      - name: "Install SFDX GIT Delta"
+        run: echo 'Y' | sf plugins install sfdx-git-delta
+
+      - name: "Generate Delta File(s)"
+        run: |
+          
 
       - name: "Decrypt the Encrypted File"
         run:

@@ -5,9 +5,6 @@
  */
 @IsTest
 private class OnboardingReminderBatchTest {
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private static Onboarding_Request__c insertRequest(Boolean assignHR) {
         Onboarding_Request__c req = new Onboarding_Request__c(
             Employee_Name__c = 'Batch Test Employee',
