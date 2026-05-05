@@ -143,6 +143,13 @@ jobs:
           steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
           steps.run-code-analyzer.outputs.num-violations > 10
         run: exit 0
+        
+      - name: "Validate"
+        uses: "./.github/workflows/template.yaml"
+        with:
+          envionment: ${{ inputs.envionment }}
+          runner: ${{ inputs.runner }}
+        secrets: inherit
 
       - name: "Validate to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
@@ -153,20 +160,14 @@ jobs:
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
             --dry-run --json 2>&1 | tee deploy-result.json
 
-      - name: "Deploy to Salesforce ORG - With Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+      - name: "Validate to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
-          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
-            --tests ${{ env.apex_test_classes }} \
+          sf project deploy start \
             --source-dir delta/force-app/main/default \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
-
-      - name: "Deploy to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request'}}
-        run: |
-          sf project deploy start --test-level RunRelevantTests \
-            --source-dir delta/force-app/main/default  \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
+            --wait 45
+            --dry-run --json 2>&1 | tee deploy-result.json
 
       - name: "Validate to Salesforce ORG - RunRelevantTests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
@@ -175,6 +176,17 @@ jobs:
             --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
             --dry-run --json 2>&1 | tee deploy-result.json
+
+      - name: "Enfore 82% code coverage"
+        run: |
+          python CODE_COVERAGE.py deploy-result.json
+
+      - name: "Deploy to Salesforce ORG - RunRelevantTests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request'}}
+        run: |
+          sf project deploy start --test-level RunRelevantTests \
+            --source-dir delta/force-app/main/default  \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       # github.event_name == 'pull_request', push (merged)
       # github.pull_request.merged == true
@@ -186,18 +198,13 @@ jobs:
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
             --wait 45
 
-      - name: "Validate to Salesforce org - Default Test Level"
-        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+      - name: "Deploy to Salesforce ORG - With Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
         run: |
-          sf project deploy start \
+          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
+            --tests ${{ env.apex_test_classes }} \
             --source-dir delta/force-app/main/default \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
-            --wait 45
-            --dry-run --json 2>&1 | tee deploy-result.json
-
-      - name: "Enfore 82% code coverage"
-        run: |
-          python CODE_COVERAGE.py deploy-result.json
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
