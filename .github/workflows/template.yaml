@@ -144,6 +144,15 @@ jobs:
           steps.run-code-analyzer.outputs.num-violations > 10
         run: exit 0
 
+      - name: "Validate to Salesforce ORG - With Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' }}
+        run: |
+          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
+            --tests ${{ env.apex_test_classes }} \
+            --source-dir delta/force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
+            --dry-run
+
       - name: "Deploy to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' }}
         run: |
@@ -159,6 +168,14 @@ jobs:
             --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
+      - name: "Validate to Salesforce ORG - RunRelevantTests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' }}
+        run: |
+          sf project deploy start --test-level RunRelevantTests \
+            --source-dir delta/force-app/main/default  \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
+            --dry-run
+
       - name: "Deploy to Salesforce org - Default Test Level"
         if: ${{ env.apex_test_classes == 'No Apex classes found' }}
         run: |
@@ -166,6 +183,15 @@ jobs:
             --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
             --wait 45
+
+      - name: "Validate to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' }}
+        run: |
+          sf project deploy start \
+            --source-dir delta/force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
+            --wait 45
+            --dry-run
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
       #- name: "Assign Permission Set"
