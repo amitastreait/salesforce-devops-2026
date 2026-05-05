@@ -145,7 +145,7 @@ jobs:
         run: exit 0
         
       - name: "Validate"
-        uses: "./.github/workflows/template.yaml"
+        uses: "./.github/workflows/validate.yaml"
         with:
           envionment: ${{ inputs.envionment }}
           runner: ${{ inputs.runner }}
