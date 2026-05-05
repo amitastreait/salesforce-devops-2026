@@ -13,18 +13,6 @@ on:
     secrets:
       SLACK_WEBHOOK_URL:
         required: false
-      #ENCRYPTION_KEY_FILE:
-      #  required: true
-      #JWT_KEY_FILE:
-      #  required: true
-      #DECRYPTION_KEY:
-      #  required: true
-      #DECRYPTION_IV:
-      #  required: true
-      #DEPLOYMENT_USER_USERNAME:
-      #  required: true
-      #CONSUMER_KEY:
-      #  required: true
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
@@ -102,7 +90,13 @@ jobs:
 
       - name: "Generate Delta File(s)"
         run: |
-          
+          mkdir delta
+          sf sgd source delta --from "HEAD~1" \
+            --to "HEAD" --generate-delta --ignore-file .sgdignore \
+            --output-dir ./delta --ignore-whitespace --api-version 66.0 \
+            --source-dir force-app/main/default
+          cat delta/package/package.xml
+          ls delta
 
       - name: "Decrypt the Encrypted File"
         run:
@@ -115,6 +109,7 @@ jobs:
             --username ${{ secrets.DEPLOYMENT_USER_USERNAME }} \
             --set-default --alias ${{ vars.ORG_DEFAULT_ALIAS }} \
             --instance-url ${{ vars.HUB_LOGIN_URL }}
+
       #- name: "Authenticate with Salesforce"
       #  env:
       #    PROD_AUTH_URL: ${{ secrets.PROD_SFDX_AUTH_URL }} 
@@ -154,21 +149,21 @@ jobs:
         run: |
           sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
             --tests ${{ env.apex_test_classes }} \
-            --source-dir force-app/main/default \
+            --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       - name: "Deploy to Salesforce ORG - RunRelevantTests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' }}
         run: |
           sf project deploy start --test-level RunRelevantTests \
-            --source-dir force-app/main/default \
+            --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       - name: "Deploy to Salesforce org - Default Test Level"
         if: ${{ env.apex_test_classes == 'No Apex classes found' }}
         run: |
           sf project deploy start \
-            --source-dir force-app/main/default \
+            --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
             --wait 45
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45

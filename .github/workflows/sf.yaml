@@ -6,7 +6,7 @@ on:
     paths:
       - 'force-app/**'
     branches:
-      - feature/**
+      - abc_feature/**
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
