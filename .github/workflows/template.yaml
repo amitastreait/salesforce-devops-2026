@@ -149,9 +149,9 @@ jobs:
         run: |
           sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
             --tests ${{ env.apex_test_classes }} \
-            --source-dir delta/force-app/main/default \
+            --source-dir force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
-            --dry-run
+            --dry-run --json 2>&1 | tee deploy-result.json
 
       - name: "Deploy to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
@@ -174,7 +174,7 @@ jobs:
           sf project deploy start --test-level RunRelevantTests \
             --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
-            --dry-run
+            --dry-run --json 2>&1 | tee deploy-result.json
 
       # github.event_name == 'pull_request', push (merged)
       # github.pull_request.merged == true
@@ -193,7 +193,12 @@ jobs:
             --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
             --wait 45
-            --dry-run
+            --dry-run --json 2>&1 | tee deploy-result.json
+
+      - name: "Enfore 82% code coverage"
+        run: |
+          python CODE_COVERAGE.py deploy-result.json
+
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
       #- name: "Assign Permission Set"

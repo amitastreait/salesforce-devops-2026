@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-COVERAGE_THRESHOLD = 82
+COVERAGE_THRESHOLD = 85
 
 
 def calculate_coverage(file_path):
