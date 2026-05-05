@@ -28,6 +28,12 @@ jobs:
       ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
 
     steps:
+
+      - name: 'Checkout code'
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+          
       - name: "Validate to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
