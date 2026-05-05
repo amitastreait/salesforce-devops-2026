@@ -145,7 +145,7 @@ jobs:
         run: exit 0
 
       - name: "Validate to Salesforce ORG - With Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' }}
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
             --tests ${{ env.apex_test_classes }} \
@@ -154,7 +154,7 @@ jobs:
             --dry-run
 
       - name: "Deploy to Salesforce ORG - With Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' }}
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
         run: |
           sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
             --tests ${{ env.apex_test_classes }} \
@@ -162,22 +162,24 @@ jobs:
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       - name: "Deploy to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' }}
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request'}}
         run: |
           sf project deploy start --test-level RunRelevantTests \
             --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       - name: "Validate to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' }}
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           sf project deploy start --test-level RunRelevantTests \
             --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
             --dry-run
 
+      # github.event_name == 'pull_request', push (merged)
+      # github.pull_request.merged == true
       - name: "Deploy to Salesforce org - Default Test Level"
-        if: ${{ env.apex_test_classes == 'No Apex classes found' }}
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
         run: |
           sf project deploy start \
             --source-dir delta/force-app/main/default \
@@ -185,7 +187,7 @@ jobs:
             --wait 45
 
       - name: "Validate to Salesforce org - Default Test Level"
-        if: ${{ env.apex_test_classes == 'No Apex classes found' }}
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           sf project deploy start \
             --source-dir delta/force-app/main/default \
