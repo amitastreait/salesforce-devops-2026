@@ -149,7 +149,7 @@ jobs:
         with:
           envionment: ${{ inputs.envionment }}
           runner: ${{ inputs.runner }}
-        secrets: inherit
+        # secrets: inherit
 
       - name: "Validate to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
