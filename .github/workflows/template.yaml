@@ -144,8 +144,7 @@ jobs:
           steps.run-code-analyzer.outputs.num-violations > 10
         run: exit 0
         
-      - name: "Validate"
-        uses: "./.github/workflows/validate.yaml"
+      - uses: "./.github/workflows/validate.yaml"
         with:
           envionment: ${{ inputs.envionment }}
           runner: ${{ inputs.runner }}
