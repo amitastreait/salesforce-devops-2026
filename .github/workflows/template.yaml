@@ -203,6 +203,7 @@ jobs:
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
 
       - name: The Slack GitHub Action
+        if: always() # success(), failure()
         uses: slackapi/slack-github-action@v3.0.3
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
