@@ -1,5 +1,5 @@
-name: "Salesforce UAT Pipeline"
-run-name: "Salesforce UAT Pipeline Run"
+name: "Salesforce staging Pipeline"
+run-name: "Salesforce staging Pipeline Run"
 
 on:
     pull_request:
@@ -9,10 +9,10 @@ on:
       paths:
         - 'force-app/**'
       branches:
-        - UAT
+        - staging
 
 env:
-  ORG_DEFAULT_ALIAS: UAT_ORG
+  ORG_DEFAULT_ALIAS: STAGING_ORG
   NODE_VERSION: ">=20.9.0"
   JAVA_VERSION: ">=11"
   SF_CLI_VERSION: latest
@@ -23,7 +23,7 @@ jobs:
     name: "Build & Validate"
     uses: "./.github/workflows/template.yaml"
     with:
-      envionment: UAT
+      envionment: staging
       runner: macos-latest
     secrets: inherit
     #secrets: 
