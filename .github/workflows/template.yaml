@@ -171,6 +171,7 @@ jobs:
             --dry-run --json 2>&1 | tee deploy-result.json
 
       - name: "Enfore 82% code coverage"
+        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           python CODE_COVERAGE.py deploy-result.json
 
