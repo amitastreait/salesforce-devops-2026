@@ -81,6 +81,7 @@ jobs:
           echo "Variable from the GitHub Org is ${{ env.ORG_VARIABLE }}"
 
       - name: "Install Salesforce Code Analyzer"
+        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           sf --help
           sf plugins install code-analyzer@${{ env.SF_CLI_VERSION }}
@@ -200,6 +201,15 @@ jobs:
             --tests ${{ env.apex_test_classes }} \
             --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+
+      - name: The Slack GitHub Action
+        uses: slackapi/slack-github-action@v3.0.3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: webhook-trigger
+          payload: |
+            status: "${{ job.status }}"
+            option: "false"
 
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
