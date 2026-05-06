@@ -4,6 +4,8 @@
  */
 trigger OnboardingTaskTrigger on Onboarding_Task__c (after update) {
     OnboardingTaskTriggerHandler.handle(
-        Trigger.new, Trigger.oldMap, Trigger.operationType
+        Trigger.new,
+        Trigger.oldMap,
+        Trigger.operationType
     );
 }
