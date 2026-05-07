@@ -176,7 +176,7 @@ jobs:
             --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
             --wait 45
-            --dry-run --json 2>&1 | tee deploy-result.json
+            --dry-run
 
       - name: "Validate to Salesforce ORG - RunRelevantTests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
@@ -190,6 +190,38 @@ jobs:
         if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           python CODE_COVERAGE.py deploy-result.json
+
+      - name: Post Validation Job ID as PR Comment
+        id: post-validation-id
+        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+        run: |
+          if [ -f "deploy-result.json" ]; then
+            VALIDATION_ID=$(python -c "
+          import sys, json
+          try:
+              data = json.load(open('deploy-result.json'))
+              print(data.get('result', {}).get('id', ''))
+          except Exception:
+              print('')
+          " 2>/dev/null || echo "")
+            if [ -n "$VALIDATION_ID" ]; then
+              echo "Captured Salesforce validation job ID: $VALIDATION_ID"
+              # Delete any previous validation ID comment from this workflow to keep the PR clean
+              gh pr view ${{ github.event.pull_request.number }} --json comments \
+                --jq '.comments[] | select(.body | startswith("<!-- sf-validation-id -->")) | .id' \
+                | xargs -I{} gh api --method DELETE /repos/${{ github.repository }}/issues/comments/{} || true
+              # Post the new ID as a hidden comment
+              gh pr comment ${{ github.event.pull_request.number }} \
+                --body "<!-- sf-validation-id -->
+          sf-validation-id: $VALIDATION_ID"
+            else
+              echo "No validation ID found in deploy-result.json — quick deploy will not be used"
+            fi
+          else
+            echo "deploy-result.json not found — skipping ID capture"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: "Deploy to Salesforce ORG - RunRelevantTests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event_name == 'push'}}
