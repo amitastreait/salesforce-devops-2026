@@ -223,6 +223,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Read Validation Job ID from PR Comment
+        id: read-validation-id
+        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' }}
+        run: |
+          VALIDATION_ID=$(gh pr view ${{ github.event.pull_request.number }} --json comments \
+            --jq '.comments[] | select(.body | startswith("<!-- sf-validation-id -->")) | .body' \
+            | grep "sf-validation-id:" | tail -1 | awk '{print $2}' || echo "")
+          if [ -n "$VALIDATION_ID" ]; then
+            echo "validation_id=$VALIDATION_ID" >> $GITHUB_ENV
+            echo "Loaded validation job ID for quick deploy: $VALIDATION_ID"
+          else
+            echo "No validation ID comment found — falling back to full deploy"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: "Deploy to Salesforce ORG - RunRelevantTests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event_name == 'push'}}
         run: |

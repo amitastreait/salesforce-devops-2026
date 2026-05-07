@@ -2,7 +2,9 @@ name: "Salesforce UAT Deployment Pipeline"
 run-name: "Salesforce UAT Deployment Pipeline"
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     paths:
       - 'force-app/**'
     branches:
