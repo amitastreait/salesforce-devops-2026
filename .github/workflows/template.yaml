@@ -13,18 +13,6 @@ on:
     secrets:
       SLACK_WEBHOOK_URL:
         required: false
-      #ENCRYPTION_KEY_FILE:
-      #  required: true
-      #JWT_KEY_FILE:
-      #  required: true
-      #DECRYPTION_KEY:
-      #  required: true
-      #DECRYPTION_IV:
-      #  required: true
-      #DEPLOYMENT_USER_USERNAME:
-      #  required: true
-      #CONSUMER_KEY:
-      #  required: true
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
@@ -32,6 +20,7 @@ env:
   JAVA_VERSION: ">=11"
   SF_CLI_VERSION: latest
   ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
+  TEST_LEVEL: RunSpecifiedTests
 
 jobs:
   build: 
@@ -92,9 +81,23 @@ jobs:
           echo "Variable from the GitHub Org is ${{ env.ORG_VARIABLE }}"
 
       - name: "Install Salesforce Code Analyzer"
+        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
           sf --help
           sf plugins install code-analyzer@${{ env.SF_CLI_VERSION }}
+      
+      - name: "Install SFDX GIT Delta"
+        run: echo 'Y' | sf plugins install sfdx-git-delta
+
+      - name: "Generate Delta File(s)"
+        run: |
+          mkdir delta
+          sf sgd source delta --from "HEAD~1" \
+            --to "HEAD" --generate-delta --ignore-file .sgdignore \
+            --output-dir ./delta --ignore-whitespace --api-version 66.0 \
+            --source-dir force-app/main/default
+          cat delta/package/package.xml
+          ls delta
 
       - name: "Decrypt the Encrypted File"
         run:
@@ -107,6 +110,7 @@ jobs:
             --username ${{ secrets.DEPLOYMENT_USER_USERNAME }} \
             --set-default --alias ${{ vars.ORG_DEFAULT_ALIAS }} \
             --instance-url ${{ vars.HUB_LOGIN_URL }}
+
       #- name: "Authenticate with Salesforce"
       #  env:
       #    PROD_AUTH_URL: ${{ secrets.PROD_SFDX_AUTH_URL }} 
@@ -126,6 +130,7 @@ jobs:
       
       - name: Run Salesforce Code Analyzer
         id: run-code-analyzer
+        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         uses: forcedotcom/run-code-analyzer@v2
         with:
           run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
@@ -141,17 +146,95 @@ jobs:
           steps.run-code-analyzer.outputs.num-violations > 10
         run: exit 0
 
-      - name: "Authenticate with Salesforce"
+      - name: "Validate to Salesforce ORG - With Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
-          # Read the Secret
-          echo ${{ secrets.PROD_SFDX_AUTH_URL }} > ${{ secrets.SFDX_AUTH_FILE_PATH }}
-          sf org login sfdx-url --sfdx-url-file \
-            ${{ secrets.SFDX_AUTH_FILE_PATH }} \
-            --set-default --alias ${{ env.ORG_DEFAULT_ALIAS }}
-          rm ${{ secrets.SFDX_AUTH_FILE_PATH }}
+          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
+            --tests ${{ env.apex_test_classes }} \
+            --source-dir force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
+            --dry-run --json 2>&1 | tee deploy-result.json
 
-      - name: "Deploy to Salesforce org"
-        run: sf project deploy start --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+      - name: "Validate to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          sf project deploy start \
+            --source-dir delta/force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
+            --wait 45
+            --dry-run --json 2>&1 | tee deploy-result.json
+
+      - name: "Validate to Salesforce ORG - RunRelevantTests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          sf project deploy start --test-level RunRelevantTests \
+            --source-dir delta/force-app/main/default  \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
+            --dry-run --json 2>&1 | tee deploy-result.json
+
+      - name: "Enfore 82% code coverage"
+        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          python CODE_COVERAGE.py deploy-result.json
+
+      - name: "Deploy to Salesforce ORG - RunRelevantTests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event_name == 'push'}}
+        run: |
+          sf project deploy start --test-level RunRelevantTests \
+            --source-dir delta/force-app/main/default  \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+
+      # github.event_name == 'pull_request', push (merged)
+      # github.pull_request.merged == true
+      - name: "Deploy to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event_name == 'push' }}
+        run: |
+          sf project deploy start \
+            --source-dir delta/force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
+            --wait 45
+
+      - name: "Deploy to Salesforce ORG - With Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event_name == 'push' }}
+        run: |
+          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
+            --tests ${{ env.apex_test_classes }} \
+            --source-dir delta/force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+
+      - name: The Slack GitHub Action
+        if: always() # success(), failure()
+        uses: slackapi/slack-github-action@v3.0.3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: webhook-trigger
+          payload: |
+            status: "${{ job.status }}"
+            option: "false"
+
+      - name: Notify Slack
+        if: always()
+        run: |
+          STATUS_EMOJI="${{ job.status == 'success' && '✅' || '❌' }}"
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "'"${STATUS_EMOJI} *${{ github.workflow }}* — ${{ job.status }}"'",
+              "attachments": [
+                {
+                  "color": "'"${{ job.status == 'success' && 'good' || 'danger' }}"'",
+                  "fields": [
+                    { "title": "Repository", "value": "${{ github.repository }}", "short": true },
+                    { "title": "Branch",     "value": "${{ github.ref_name }}",   "short": true },
+                    { "title": "Triggered by", "value": "${{ github.actor }}",   "short": true },
+                    { "title": "Event",      "value": "${{ github.event_name }}", "short": true },
+                    { "title": "Run URL",    "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false }
+                  ]
+                }
+              ]
+            }'
+
+
         # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
       
       #- name: "Assign Permission Set"

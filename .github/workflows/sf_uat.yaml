@@ -4,11 +4,11 @@ run-name: "Salesforce UAT Pipeline Run"
 on:
   pull_request:
     types:
-      - open
-      - closed
+      - opened
+      # - closed
       - synchronize
     paths:
-      - 'force-app/**'
+      - 'force-app/**' # 'force-app/*'
     branches:
       - UAT
       - uat

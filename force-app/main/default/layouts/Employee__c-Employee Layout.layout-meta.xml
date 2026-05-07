@@ -6,7 +6,7 @@
         <customLabel>true</customLabel>
         <detailHeading>true</detailHeading>
         <editHeading>true</editHeading>
-        <label>Employee Information</label>
+        <label>Employee-Information</label>
         <layoutColumns>
             <layoutItems>
                 <behavior>Readonly</behavior>

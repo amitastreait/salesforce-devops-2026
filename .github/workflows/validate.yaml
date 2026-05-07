@@ -1,0 +1,61 @@
+name: Validate
+
+on:
+  workflow_call:
+    inputs:
+      envionment:
+        required: true
+        type: string
+      runner:
+        type: string
+        default: ubuntu-latest
+        required: true
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: false
+
+env:
+  ORG_DEFAULT_ALIAS: PROD_ORG
+  TEST_LEVEL: RunSpecifiedTests
+
+jobs:
+  build: 
+    name: "Build/Deploy against the Salesforce ENV"
+    runs-on: ${{ inputs.runner }}
+    environment: ${{ inputs.envionment }}
+
+    env:
+      ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
+
+    steps:
+
+      - name: 'Checkout code'
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+          
+      - name: "Validate to Salesforce ORG - With Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
+            --tests ${{ env.apex_test_classes }} \
+            --source-dir force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
+            --dry-run --json 2>&1 | tee deploy-result.json
+
+      - name: "Validate to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          sf project deploy start \
+            --source-dir delta/force-app/main/default \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
+            --wait 45
+            --dry-run --json 2>&1 | tee deploy-result.json
+
+      - name: "Validate to Salesforce ORG - RunRelevantTests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          sf project deploy start --test-level RunRelevantTests \
+            --source-dir delta/force-app/main/default  \
+            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
+            --dry-run --json 2>&1 | tee deploy-result.json

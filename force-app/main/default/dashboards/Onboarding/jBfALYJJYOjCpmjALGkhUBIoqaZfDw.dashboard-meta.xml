@@ -246,8 +246,8 @@
     </dashboardGridLayout>
     <dashboardType>SpecifiedUser</dashboardType>
     <isGridLayout>true</isGridLayout>
-    <owner>amitasinghsfdc-5khl@force.com</owner>
-    <runningUser>amitasinghsfdc-5khl@force.com</runningUser>
+    <!-- <owner>amitasinghsfdc-5khl@force.com</owner>
+    <runningUser>amitasinghsfdc-5khl@force.com</runningUser> -->
     <textColor>#000000</textColor>
     <title>Onboarding Overview</title>
     <titleColor>#000000</titleColor>

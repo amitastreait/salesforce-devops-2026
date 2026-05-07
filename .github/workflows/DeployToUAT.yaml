@@ -1,20 +1,16 @@
-name: "Salesforce Prod Pipeline"
-run-name: "Salesforce Prod Pipeline Run"
+name: "Salesforce UAT Deployment Pipeline"
+run-name: "Salesforce UAT Deployment Pipeline"
 
 on:
-  pull_request:
-    types:
-      - opened
-      # - closed
-      - synchronize
+  push:
     paths:
-      - 'force-app/**' # 'force-app/*'
+      - 'force-app/**'
     branches:
-      - main
-      - master
+      - UAT
+      - uat
 
 env:
-  ORG_DEFAULT_ALIAS: PROD_ORG
+  ORG_DEFAULT_ALIAS: UAT_ORG
   NODE_VERSION: ">=20.9.0"
   JAVA_VERSION: ">=11"
   SF_CLI_VERSION: latest
@@ -25,7 +21,7 @@ jobs:
     name: "Build & Validate"
     uses: "./.github/workflows/template.yaml"
     with:
-      envionment: production
+      envionment: UAT
       runner: macos-latest
     secrets: inherit
     #secrets: 
