@@ -187,6 +187,7 @@ jobs:
       # github.event_name == 'pull_request', push (merged)
       # github.pull_request.merged == true
       - name: "Deploy to Salesforce org - Default Test Level"
+        #if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.apex_classes == 'No Apex classes found' && (env.validation_id == '' || env.deploy_done == 'false') }}
         if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event_name == 'push' }}
         run: |
           sf project deploy start \
@@ -201,16 +202,16 @@ jobs:
             --tests ${{ env.apex_test_classes }} \
             --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
-
-      - name: The Slack GitHub Action
-        if: always() # success(), failure()
-        uses: slackapi/slack-github-action@v3.0.3
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: webhook-trigger
-          payload: |
-            status: "${{ job.status }}"
-            option: "false"
+      
+      #- name: The Slack GitHub Action
+      #  if: always() # success(), failure()
+      #  uses: slackapi/slack-github-action@v3.0.3
+      #  with:
+      #    webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #    webhook-type: webhook-trigger
+      #    payload: |
+      #      status: "${{ job.status }}"
+      #      option: "false"
 
       - name: Notify Slack
         if: always()

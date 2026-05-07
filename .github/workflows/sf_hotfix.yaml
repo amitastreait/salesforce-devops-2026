@@ -2,14 +2,14 @@ name: "Salesforce Hotfix Pipeline"
 run-name: "Salesforce Hotfix Pipeline Run"
 
 on:
-    pull_request:
-      types:
-        - opened
-        - synchronize
-      paths:
-        - 'force-app/**'
-      branches:
-        - hotfix
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - 'force-app/**'
+    branches:
+      - hotfix
 
 env:
   ORG_DEFAULT_ALIAS: UAT_ORG
