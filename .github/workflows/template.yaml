@@ -146,6 +146,20 @@ jobs:
           steps.run-code-analyzer.outputs.num-violations > 10
         run: exit 0
 
+      - name: SonarQube Scan
+        id: run-sonarqube-scan
+        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.verbose=true
+            -Dsonar.language=apex
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.coverage.inclusions=**/*Test.cls
+            -Dsonar.exclusions=**/.cmp,**/force-app/**/fflib_.cls,**/.yml,**/.js,**/.xml,**/.css,**/.html,**/.woff2,**/.woff,**/.auradoc,**/*.svg,force-app/main/default/staticresources/**
+
       - name: "Validate to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
