@@ -18,6 +18,11 @@ env:
   SF_CLI_VERSION: latest
   ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
 
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+  
 jobs:
   build-salesforce: 
     name: "Build & Validate"
