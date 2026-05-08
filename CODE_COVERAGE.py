@@ -4,26 +4,58 @@ import sys
 
 COVERAGE_THRESHOLD = 85
 
+def check_component_failures(data):
+    component_failures = data.get('result', {}).get('details', {}).get('componentFailures', [])
+    if not component_failures:
+        return False
 
-def calculate_coverage(file_path):
-    if not os.path.exists(file_path):
-        print("No deployment result found — no test classes were run, skipping coverage check.")
-        sys.exit(0)
+    print(f"=== Component Failures ({len(component_failures)} error(s)) ===")
+    for failure in component_failures:
+        component_type = failure.get('componentType', 'Unknown')
+        full_name = failure.get('fullName', 'Unknown')
+        file_name = failure.get('fileName', 'Unknown')
+        problem = failure.get('problem', 'No details provided')
+        problem_type = failure.get('problemType', 'Error')
+        print(f"  [{problem_type}] {component_type}: {full_name}")
+        print(f"    File    : {file_name}")
+        print(f"    Problem : {problem}")
 
-    with open(file_path, 'r') as file:
-        data = json.load(file)
+    print(f"\nCOMPONENT FAILURE GATE FAILED: {len(component_failures)} component(s) failed to deploy.")
+    return True
 
-    # Extract coverage array from sf project deploy start --json output
+
+def check_test_failures(data):
     try:
-        coverage_list = data['result']['details']['runTestResult']['codeCoverage']
+        failures = data['result']['details']['runTestResult']['failures']
     except (KeyError, TypeError):
-        print("No code coverage data found in the deployment result.")
-        sys.exit(0)
+        return False
 
-    if not coverage_list:
-        print("Coverage list is empty — no Apex classes were covered.")
-        sys.exit(0)
+    if not failures:
+        return False
 
+    print(f"=== Test Failures ({len(failures)} failure(s)) ===")
+    for failure in failures:
+        name = failure.get('name', 'Unknown')
+        method = failure.get('methodName', 'Unknown')
+        message = failure.get('message', 'No message')
+        stack_trace = failure.get('stackTrace', '')
+        print(f"  [FAIL] {name}.{method}")
+        print(f"    Message     : {message}")
+        if stack_trace:
+            print(f"    Stack Trace : {stack_trace}")
+
+    print(f"\nTEST FAILURE GATE FAILED: {len(failures)} test(s) failed.")
+    return True
+
+
+def extract_coverage_list(data):
+    try:
+        return data['result']['details']['runTestResult']['codeCoverage']
+    except (KeyError, TypeError):
+        return None
+
+
+def report_per_class_coverage(coverage_list):
     total_lines = 0
     covered_lines = 0
     failed_classes = []
@@ -49,6 +81,35 @@ def calculate_coverage(file_path):
         if pct < COVERAGE_THRESHOLD:
             failed_classes.append((name, pct, covered, num_locations))
 
+    return total_lines, covered_lines, failed_classes
+
+
+def calculate_coverage(file_path):
+    if not os.path.exists(file_path):
+        print("No deployment result found — no test classes were run, skipping coverage check.")
+        sys.exit(0)
+
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    has_failures = check_component_failures(data)
+    if has_failures:
+        print()
+
+    if check_test_failures(data):
+        has_failures = True
+        print()
+
+    coverage_list = extract_coverage_list(data)
+    if coverage_list is None:
+        print("No code coverage data found in the deployment result.")
+        sys.exit(1 if has_failures else 0)
+
+    if not coverage_list:
+        print("Coverage list is empty — no Apex classes were covered.")
+        sys.exit(1 if has_failures else 0)
+
+    total_lines, covered_lines, failed_classes = report_per_class_coverage(coverage_list)
     overall = (covered_lines / total_lines) * 100 if total_lines > 0 else 0
 
     print(f"\n=== Coverage Summary ===")
@@ -61,6 +122,9 @@ def calculate_coverage(file_path):
         for name, pct, covered, total in failed_classes:
             print(f"  {name}: {pct:.2f}% ({covered}/{total} lines covered) — needs {COVERAGE_THRESHOLD - pct:.2f}% more")
         print(f"\nCOVERAGE GATE FAILED: Fix test coverage before this PR can be merged.")
+        sys.exit(1)
+
+    if has_failures:
         sys.exit(1)
 
     print(f"\nCOVERAGE GATE PASSED: All classes meet the {COVERAGE_THRESHOLD}% minimum.")

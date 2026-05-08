@@ -196,6 +196,17 @@ jobs:
         run: |
           python CODE_COVERAGE.py deploy-result.json
 
+      - name: "Validate Pre-Destructive Changes in Salesforce ${{ inputs.envionment }}"
+        # PR is Raised and it's in Open Status --> Validate the Changes
+        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.pull_request.merged == false}}
+        run: |
+          if grep -q '<types>' destructiveChanges/destructiveChanges.xml ; then
+            echo "---- Validate Pre-Destructive Changes in Salesforce ----"
+            sf project deploy start --target-org ${{ env.ORG_DEFAULT_ALIAS }} --pre-destructive-changes destructiveChanges/destructiveChanges.xml --manifest destructiveChanges/package.xml --dry-run --wait 45
+          else
+            echo "---- No changes to validate ----"
+          fi
+
       - name: Post Validation Job ID as PR Comment
         id: post-validation-id
         if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
@@ -244,6 +255,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: "Deploy Pre-Destructive Changes in Salesforce ${{ inputs.envionment }}"
+        # PR is Raised and it's in Open Status --> Validate the Changes
+        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' }}
+        run: |
+          if grep -q '<types>' estructiveChanges/destructiveChanges.xml ; then
+            echo "---- Deploy Pre-Destructive Changes in Salesforce ----"
+            sf project deploy start --target-org ${{ env.ORG_DEFAULT_ALIAS }} --pre-destructive-changes destructiveChanges/destructiveChanges.xml --manifest destructiveChanges/package.xml --wait 10
+          else
+            echo "---- No changes to deploy ----"
+          fi
+
       - name: Quick Deploy to Salesforce (reuse validated job)
         if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.validation_id != '' }}
         run: |
@@ -287,6 +309,17 @@ jobs:
             --tests ${{ env.apex_test_classes }} \
             --source-dir delta/force-app/main/default \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
+
+      - name: Deploy Post-Destructive Changes in Salesforce
+        # PR is Raised and it's in Open Status --> Validate the Changes
+        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' }}
+        run: |
+          if grep -q '<types>' destructiveChanges/postDestructiveChanges.xml ; then
+            echo "---- Deploy Post-Destructive Changes in Salesforce ----"
+            sf project deploy start --target-org ${{ env.ORG_DEFAULT_ALIAS }} --post-destructive-changes destructiveChanges/postDestructiveChanges.xml --manifest destructiveChanges/package.xml --wait 45
+          else
+            echo "---- No changes to deploy ----"
+          fi
       
       #- name: The Slack GitHub Action
       #  if: always() # success(), failure()

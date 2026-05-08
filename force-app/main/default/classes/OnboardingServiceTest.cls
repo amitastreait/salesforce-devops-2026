@@ -15,8 +15,7 @@ private class OnboardingServiceTest {
             Employee_Name__c = name,
             Start_Date__c    = Date.today().addDays(daysFromNow),
             Department__c    = 'IT',
-            Status__c        = 'New',
-            Assigned_HR__c   = UserInfo.getUserId()
+            Status__c        = 'New', Assigned_HR__c   = UserInfo.getUserId()
         );
     }
 
