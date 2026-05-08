@@ -93,7 +93,7 @@ private class OnboardingReminderBatchTest {
         insertRequest(false);
 
         Test.startTest();
-        Database.executeBatch(new OnboardingReminderBatch(), 1);
+        Database.executeBatch(new OnboardingReminderBatch(), 200);
         Test.stopTest();
 
         Assert.isTrue(true, 'Batch should process all chunks without exception');

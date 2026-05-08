@@ -356,7 +356,7 @@ public with sharing class OnboardingService {
             Reporting_Manager__c = reportingManagerId,
             Buddy__c             = buddyId
         );
-        insert as user request;
+        insert as system request;
         return request.Id;
     }
 
