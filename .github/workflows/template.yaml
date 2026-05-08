@@ -168,6 +168,7 @@ jobs:
       - name: "Validate to Salesforce ORG - With Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
+          set -o pipefail
           sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
             --tests ${{ env.apex_test_classes }} \
             --source-dir force-app/main/default \
@@ -186,6 +187,7 @@ jobs:
       - name: "Validate to Salesforce ORG - RunRelevantTests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
+          set -o pipefail
           sf project deploy start --test-level RunRelevantTests \
             --source-dir delta/force-app/main/default  \
             --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
@@ -269,7 +271,7 @@ jobs:
       - name: Quick Deploy to Salesforce (reuse validated job)
         if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.validation_id != '' }}
         run: |
-          set -eo pipefail
+          set -o pipefail
           if grep -q '<types>' delta/package/package.xml ; then
             echo "---- Attempting quick deploy using validated job ID: ${{ env.validation_id }} ----"
             if sf project deploy quick --job-id ${{ env.validation_id }} --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 ; then
