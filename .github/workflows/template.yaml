@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   build: 
-    name: "Build/Deploy against the Salesforce ENV"
+    name: "Build/Deploy against the ${{ inputs.envionment }}"
     runs-on: ${{ inputs.runner }}
     environment: ${{ inputs.envionment }}
 
@@ -244,8 +244,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Quick Deploy to Salesforce (reuse validated job)
+        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.validation_id != '' }}
+        run: |
+          set -eo pipefail
+          if grep -q '<types>' delta/package/package.xml ; then
+            echo "---- Attempting quick deploy using validated job ID: ${{ env.validation_id }} ----"
+            if sf project deploy quick --job-id ${{ env.validation_id }} --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 ; then
+              echo "deploy_done=true" >> $GITHUB_ENV
+              echo "Quick deploy succeeded"
+            else
+              echo "Quick deploy failed (validation may have expired, already been deployed, or ran without tests) — falling back to full deploy"
+              echo "deploy_done=false" >> $GITHUB_ENV
+            fi
+          else
+            echo "---- No changes to deploy ----"
+            echo "deploy_done=true" >> $GITHUB_ENV
+          fi
+
       - name: "Deploy to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event_name == 'push'}}
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event.action == 'closed' && (env.validation_id == '' || env.deploy_done == false ) }}
         run: |
           sf project deploy start --test-level RunRelevantTests \
             --source-dir delta/force-app/main/default  \
@@ -255,7 +273,7 @@ jobs:
       # github.pull_request.merged == true
       - name: "Deploy to Salesforce org - Default Test Level"
         #if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.apex_classes == 'No Apex classes found' && (env.validation_id == '' || env.deploy_done == 'false') }}
-        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event_name == 'push' }}
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == true && github.event.action == 'closed' && (env.validation_id == '' || env.deploy_done == false ) }}
         run: |
           sf project deploy start \
             --source-dir delta/force-app/main/default \
@@ -263,7 +281,7 @@ jobs:
             --wait 45
 
       - name: "Deploy to Salesforce ORG - With Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event_name == 'push' }}
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == true && github.event.action == 'closed' && (env.validation_id == '' || env.deploy_done == false ) }}
         run: |
           sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
             --tests ${{ env.apex_test_classes }} \
