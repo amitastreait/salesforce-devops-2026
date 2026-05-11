@@ -93,7 +93,7 @@ jobs:
         uses: xom9ikk/dotenv@v2
         with:
           path: ./
-          mode: .env.${{inputs.env_alias}}
+          mode: ${{inputs.env_alias}}
 
       - name: "setup Salesforce CLI"
         run: npm install --global @salesforce/cli@${{ env.SF_CLI_VERSION }}
