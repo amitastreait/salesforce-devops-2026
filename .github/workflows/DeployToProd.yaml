@@ -2,9 +2,11 @@ name: "Salesforce Prod Deployment Pipeline"
 run-name: "Salesforce Prod Deployment Pipeline Run"
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     paths:
-      - 'force-app/**' # 'force-app/*'
+      - 'force-app/**'
     branches:
       - main
       - master
@@ -16,6 +18,11 @@ env:
   SF_CLI_VERSION: latest
   ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
 
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+  
 jobs:
   build-salesforce: 
     name: "Build & Validate"
@@ -23,6 +30,7 @@ jobs:
     with:
       envionment: production
       runner: macos-latest
+      env_alias: prod
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

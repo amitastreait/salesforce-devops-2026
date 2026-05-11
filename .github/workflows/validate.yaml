@@ -14,6 +14,11 @@ on:
       SLACK_WEBHOOK_URL:
         required: false
 
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+  
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
   TEST_LEVEL: RunSpecifiedTests

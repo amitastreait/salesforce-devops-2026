@@ -12,6 +12,11 @@ on:
     branches:
       - main
       - master
+      
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
 
 env:
   ORG_DEFAULT_ALIAS: PROD_ORG
@@ -27,6 +32,7 @@ jobs:
     with:
       envionment: production
       runner: macos-latest
+      env_alias: prod
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

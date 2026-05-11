@@ -1,0 +1,142 @@
+name: Salesforce PR Review with AI
+
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+jobs:
+  salesforce-review:
+    # Runs only when a user explicitly triggers a slash command on a PR comment.
+    # Supported commands:
+    #   /analyze          → general Salesforce code review
+    #   /analyze failure  → review and explain a CI/deployment failure
+    #   /analyze issue    → investigate a specific bug or issue
+    #   /analyze build    → review build/deployment pipeline problems
+    if: >-
+      github.event.issue.pull_request != null &&
+      github.event.comment.user.type != 'Bot' && (
+        startsWith(github.event.comment.body, '/analyze failure') ||
+        startsWith(github.event.comment.body, '/analyze issue') ||
+        startsWith(github.event.comment.body, '/analyze build') ||
+        github.event.comment.body == '/analyze'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Salesforce PR Review with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          # Enable progress tracking
+          track_progress: true
+
+          # Salesforce-specific review instructions
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Perform a comprehensive **Salesforce-specific** code review with the following focus areas:
+
+            ## 1. **Apex Code Quality & Best Practices**
+               - Bulkification: Ensure all Apex code handles bulk operations (200+ records)
+               - SOQL/SOSL Queries: Should be outside loops, selective filters, query limits
+               - DML Operations: Should be outside loops, use Database methods with error handling
+               - Governor Limits: Check for potential CPU time, heap size, query limits violations
+               - Trigger Framework: Single trigger per object, proper delegation to handler classes
+               - Exception Handling: Proper try-catch blocks, custom exceptions where appropriate
+               - Naming Conventions: Follow Salesforce standards (CapitalCase for classes, camelCase for methods)
+
+            ## 2. **Security & Sharing**
+               - CRUD/FLS Checks: Verify object and field-level security (with/without sharing)
+               - SOQL Injection: Check for dynamic SOQL with proper escaping (String.escapeSingleQuotes)
+               - XSS Prevention: Validate user inputs in Visualforce/LWC
+               - Sharing Rules: Appropriate use of with sharing, without sharing, inherited sharing
+               - API Security: Check @AuraEnabled, @RemoteAction methods for security
+               - Sensitive Data: No hardcoded credentials, API keys, or sensitive information
+
+            ## 3. **Lightning Web Components (LWC)**
+               - Component Design: Proper use of @api, @track, @wire decorators
+               - Event Handling: Custom events, proper event bubbling/composition
+               - API Calls: Use @wire for read operations, imperative for write operations
+               - Error Handling: Proper use of error callbacks and user notifications
+               - Lightning Data Service: Prefer LDS over Apex when possible
+               - Accessibility: Proper ARIA labels, keyboard navigation
+               - Performance: Avoid unnecessary rerenders, use getters sparingly
+
+            ## 4. **Test Coverage & Quality**
+               - Coverage: Ensure at least 75% code coverage (Salesforce minimum)
+               - Test Data: Use Test.startTest()/stopTest(), create test data in @TestSetup
+               - Assertions: Meaningful assertions, test positive and negative scenarios
+               - Bulk Testing: Test with 200+ records to verify bulkification
+               - System.runAs(): Test sharing rules and permissions
+               - Mock Callouts: Use Test.setMock for external integrations
+               - No SeeAllData: Avoid @isTest(SeeAllData=true) unless absolutely necessary
+
+            ## 5. **SOQL/SOSL Optimization**
+               - Selective Queries: Use indexed fields (Id, Name, CreatedDate, etc.)
+               - Query Limits: Stay under 100 SOQL queries per transaction
+               - Relationship Queries: Efficient use of parent-child and child-parent queries
+               - Aggregate Queries: Use COUNT(), SUM(), MAX() appropriately
+               - Query Plans: Consider query performance for large data volumes
+
+            ## 6. **Integration & API Best Practices**
+               - Callout Limits: Max 100 callouts per transaction
+               - Async Processing: Use @future, Queueable, or Batch for long-running operations
+               - Named Credentials: Use for external authentication
+               - Error Handling: Proper retry logic and logging for failed callouts
+               - Timeout Handling: Set appropriate timeout values
+
+            ## 7. **Platform Features & Patterns**
+               - Custom Metadata: Use for configuration instead of Custom Settings where appropriate
+               - Platform Events: Check for proper event publishing and subscription
+               - Flow/Process Builder: Note if declarative tools might be better than code
+               - Schema Describe: Cache describe results to avoid governor limits
+               - Platform Cache: Check for appropriate use of cache
+
+            ## 8. **Documentation & Maintainability**
+               - Class/Method Headers: JavaDoc-style comments for public methods
+               - Complex Logic: Inline comments for non-obvious code
+               - README Updates: Document new features, setup steps, or dependencies
+               - Change Sets/Metadata: Ensure proper metadata types included
+
+            ## 9. **Deployment & Package Structure**
+               - sfdx-project.json: Verify package structure and dependencies
+               - Manifest Files: Check package.xml for completeness
+               - Destructive Changes: Flag any destructiveChanges.xml carefully
+               - Version Control: Proper metadata format and structure
+
+            ## 10. **Common Salesforce Anti-Patterns to Flag**
+               - Queries/DML in loops
+               - Hard-coded IDs (except for known system records)
+               - Recursive triggers without prevention
+               - Missing null checks
+               - Over-use of without sharing
+               - Not using platform cache for frequently accessed data
+               - Creating records one-by-one instead of bulk
+
+            ---
+
+            **Review Guidelines:**
+            - Use inline comments for specific code issues with file paths and line numbers
+            - Provide severity levels: 🔴 Critical, 🟡 Warning, 🔵 Suggestion
+            - Suggest specific code improvements with examples
+            - Acknowledge good practices and patterns
+            - Flag any governor limit risks
+            - Note any security vulnerabilities immediately
+
+            Provide detailed, actionable feedback that helps developers write production-ready Salesforce code.
+
+          # Tools for comprehensive PR review
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

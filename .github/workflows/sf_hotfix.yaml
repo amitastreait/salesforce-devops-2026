@@ -2,14 +2,19 @@ name: "Salesforce Hotfix Pipeline"
 run-name: "Salesforce Hotfix Pipeline Run"
 
 on:
-    pull_request:
-      types:
-        - opened
-        - synchronize
-      paths:
-        - 'force-app/**'
-      branches:
-        - hotfix
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - 'force-app/**'
+    branches:
+      - hotfix
+      
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
 
 env:
   ORG_DEFAULT_ALIAS: UAT_ORG
@@ -25,6 +30,7 @@ jobs:
     with:
       envionment: hotfix
       runner: macos-latest
+      env_alias: hotfix
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -2,12 +2,19 @@ name: "Salesforce UAT Deployment Pipeline"
 run-name: "Salesforce UAT Deployment Pipeline"
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     paths:
       - 'force-app/**'
     branches:
       - UAT
       - uat
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
 
 env:
   ORG_DEFAULT_ALIAS: UAT_ORG
@@ -23,6 +30,7 @@ jobs:
     with:
       envionment: UAT
       runner: macos-latest
+      env_alias: uat
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

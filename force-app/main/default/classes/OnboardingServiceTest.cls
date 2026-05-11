@@ -10,13 +10,15 @@ private class OnboardingServiceTest {
 
     // ── Test Data Helpers ────────────────────────────────────────────────
 
+    public static String ADMIN_EMAIL = '{env.ADMIN_USER_EMAIL}';
+    public static String PROD_REPLACEMENT = '{env.PROD_REPLACEMENT}';
+
     private static Onboarding_Request__c makeRequest(String name, Integer daysFromNow) {
         return new Onboarding_Request__c(
             Employee_Name__c = name,
             Start_Date__c    = Date.today().addDays(daysFromNow),
             Department__c    = 'IT',
-            Status__c        = 'New',
-            Assigned_HR__c   = UserInfo.getUserId()
+            Status__c        = 'New', Assigned_HR__c   = UserInfo.getUserId()
         );
     }
 
