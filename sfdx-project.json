@@ -9,6 +9,25 @@
       "versionDescription": ""
     }
   ],
+  "replacements": [
+    {
+      "filename": "force-app/main/default/classes/OnboardingServiceTest.cls",
+      "stringToReplace": "{env.ADMIN_USER_EMAIL}",
+      "replaceWithEnv": "ADMIN_USER_EMAIL",
+      "allowUnsetEnvVariable": true
+    },
+    {
+      "filename": "force-app/main/default/namedCredentials/PantherSchools.namedCredential-meta.xml",
+      "stringToReplace": "https://api.dev.pantherschools.com/v1",
+      "replaceWithEnv": "PANTHER_SCHOOL_API_URL",
+      "allowUnsetEnvVariable": true
+    },
+    {
+      "glob": "force-app/main/default/classes/*.xml",
+      "regexToReplace": "<apiVersion>\\d+\\.0</apiVersion>",
+      "replaceWithFile": "replacements/api-version.txt"
+    }
+  ],
   "name": "salesforce-devops-2026",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",

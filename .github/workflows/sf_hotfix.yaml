@@ -30,6 +30,7 @@ jobs:
     with:
       envionment: hotfix
       runner: macos-latest
+      env_alias: hotfix
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

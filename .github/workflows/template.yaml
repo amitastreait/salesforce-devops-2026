@@ -10,6 +10,9 @@ on:
         type: string
         default: ubuntu-latest
         required: true
+      env_alias:
+        type: string
+        required: true
     secrets:
       SLACK_WEBHOOK_URL:
         required: false
@@ -71,6 +74,26 @@ jobs:
           echo "apex_test_classes=$(cat output.txt)" >> $GITHUB_ENV
           echo "${{ env.apex_test_classes }}"
         # ${{ env.apex_test_classes }}
+
+      - name: Update .env.${{inputs.env_alias}} file
+        id: update-env-file
+        run: |
+          echo " " >> .env.${{inputs.env_alias}}
+          echo "AWS_ACCESS_KEY= ${{secrets.AWS_ACCESS_KEY}}" >> .env.${{inputs.env_alias}}
+          echo " " >> .env.${{inputs.env_alias}}
+          echo "AWS_ACCESS_SECRET= ${{secrets.AWS_ACCESS_SECRET}}" >> .env.${{inputs.env_alias}}
+          echo " " >> .env.${{inputs.env_alias}}
+          echo "SITE_ADMIN= ${{secrets.SITE_ADMIN}}" >> .env.${{inputs.env_alias}}
+          echo " " >> .env.${{inputs.env_alias}}
+          echo "SITE_DOMAIN= ${{secrets.SITE_DOMAIN}}" >> .env.${{inputs.env_alias}}
+          echo " " >> .env.${{inputs.env_alias}}
+          cat .env.${{inputs.env_alias}}
+
+      - name: Load .env file
+        uses: xom9ikk/dotenv@v2
+        with:
+          path: ./
+          mode: ${{inputs.environment}}
 
       - name: "setup Salesforce CLI"
         run: npm install --global @salesforce/cli@${{ env.SF_CLI_VERSION }}

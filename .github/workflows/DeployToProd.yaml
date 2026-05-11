@@ -30,6 +30,7 @@ jobs:
     with:
       envionment: production
       runner: macos-latest
+      env_alias: prod
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

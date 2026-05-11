@@ -10,6 +10,8 @@ private class OnboardingServiceTest {
 
     // ── Test Data Helpers ────────────────────────────────────────────────
 
+    public static String ADMIN_EMAIL = '{env.ADMIN_USER_EMAIL}';
+
     private static Onboarding_Request__c makeRequest(String name, Integer daysFromNow) {
         return new Onboarding_Request__c(
             Employee_Name__c = name,
