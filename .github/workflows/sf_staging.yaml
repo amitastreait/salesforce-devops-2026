@@ -30,7 +30,7 @@ jobs:
     with:
       envionment: staging
       runner: macos-latest
-      env_alias: uat
+      env_alias: staging
     secrets: inherit
     #secrets: 
     #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -26,6 +26,17 @@
       "glob": "force-app/main/default/classes/*.xml",
       "regexToReplace": "<apiVersion>\\d+\\.0</apiVersion>",
       "replaceWithFile": "replacements/api-version.txt"
+    },
+    {
+      "filename": "force-app/main/default/classes/OnboardingServiceTest.cls",
+      "stringToReplace": "{env.PROD_REPLACEMENT}",
+      "replaceWithEnv": "THE_REPLACEMENT",
+      "replaceWhenEnv": [
+        {
+          "env": "DEPLOY_DESTINATION",
+          "value": "PROD"
+        }
+      ]
     }
   ],
   "name": "salesforce-devops-2026",

@@ -75,7 +75,7 @@ jobs:
           echo "${{ env.apex_test_classes }}"
         # ${{ env.apex_test_classes }}
 
-      - name: Update .env.${{inputs.env_alias}} file
+      - name: Update .env.${{inputs.env_alias}} file # .env.uat, .env.qa
         id: update-env-file
         run: |
           echo " " >> .env.${{inputs.env_alias}}

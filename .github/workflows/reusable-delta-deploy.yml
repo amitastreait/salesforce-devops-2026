@@ -1,0 +1,233 @@
+name: Reusable Delta Deploy
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Shared core deployment workflow called by:
+#   - tag-based-deploy.yml   (push to releases/* tag)
+#   - release-based-deploy.yml (GitHub Release published)
+#
+# Callers are responsible for:
+#   - Determining current_tag and previous_tag from their event context
+#   - Selecting the target environment and test level
+#   - Passing environment-specific secrets
+#
+# Authentication uses per-environment GitHub Secrets:
+#   SF_SERVER_KEY      — PEM content of the JWT private key
+#   SF_CONSUMER_KEY    — Connected App consumer/client key
+#   SF_USERNAME        — Salesforce deployment username
+#   SF_INSTANCE_URL    — https://login.salesforce.com or https://test.salesforce.com
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target Salesforce environment (must match a GitHub Environment)'
+        required: true
+        type: string
+      current_tag:
+        description: 'Git ref or tag to deploy up to (e.g. v1.2.3 or HEAD)'
+        required: true
+        type: string
+      previous_tag:
+        description: 'Git ref or tag to diff from. Empty = deploy everything in current_tag.'
+        required: false
+        type: string
+        default: ''
+      test_level:
+        description: 'Apex test execution level'
+        required: false
+        type: string
+        default: 'RunLocalTests'
+    secrets:
+      SF_SERVER_KEY:
+        description: 'PEM content of the Salesforce JWT server private key'
+        required: true
+      SF_CONSUMER_KEY:
+        description: 'Salesforce Connected App consumer key'
+        required: true
+      SF_USERNAME:
+        description: 'Salesforce username for deployment'
+        required: true
+      SF_INSTANCE_URL:
+        description: 'Salesforce instance URL (login.salesforce.com or test.salesforce.com)'
+        required: true
+      TEAMS_WEBHOOK_URL:
+        description: 'Microsoft Teams incoming webhook URL for notifications'
+        required: false
+
+jobs:
+  delta-deploy:
+    name: Deploy delta to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── 2. Node ────────────────────────────────────────────────────────────
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── 3. Cache SF CLI ────────────────────────────────────────────────────
+      - name: Cache Salesforce CLI
+        uses: actions/cache@v4
+        id: cache-sf-cli
+        with:
+          path: |
+            ~/.npm-global
+            ~/.npm
+            ~/.sf
+            ~/.sfdx
+            ~/.local/share/sf
+          key: ${{ runner.os }}-sf-cli-delta-deploy-${{ hashFiles('.github/workflows/reusable-delta-deploy.yml') }}
+
+      - name: Configure npm global directory
+        run: |
+          npm config set prefix ~/.npm-global
+          echo "$HOME/.npm-global/bin" >> $GITHUB_PATH
+
+      # ── 4. Install tools ───────────────────────────────────────────────────
+      - name: Install Salesforce CLI
+        if: steps.cache-sf-cli.outputs.cache-hit != 'true'
+        run: |
+          npm install -g @salesforce/cli@latest
+          echo 'y' | sf plugins install sfdx-git-delta@latest
+
+      # ── 5. Generate delta ──────────────────────────────────────────────────
+      - name: Generate Delta Package
+        id: delta
+        run: |
+          mkdir -p delta
+
+          CURRENT_TAG="${{ inputs.current_tag }}"
+          PREVIOUS_TAG="${{ inputs.previous_tag }}"
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag provided — first deployment, deploying full source."
+            sf sgd source delta \
+              --to "$CURRENT_TAG" \
+              --output delta/ \
+              --generate-delta
+          else
+            echo "Comparing $PREVIOUS_TAG → $CURRENT_TAG"
+            sf sgd source delta \
+              --to "$CURRENT_TAG" \
+              --from "$PREVIOUS_TAG" \
+              --output delta/ \
+              --generate-delta
+          fi
+
+          echo "=== Delta Package Contents ==="
+          if [ -f "delta/package/package.xml" ]; then
+            cat delta/package/package.xml
+            if grep -q '<types>' delta/package/package.xml; then
+              echo "has_delta=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_delta=false" >> $GITHUB_OUTPUT
+              echo "Package.xml exists but contains no component types — nothing to deploy."
+            fi
+          else
+            echo "has_delta=false" >> $GITHUB_OUTPUT
+            echo "No package.xml generated."
+          fi
+
+      # ── 6. Authenticate ────────────────────────────────────────────────────
+      - name: Authenticate to Salesforce (${{ inputs.environment }})
+        run: |
+          # Write key to temp file and remove immediately after auth
+          printf '%s' "${{ secrets.SF_SERVER_KEY }}" > sf_server.key
+          sf org login jwt \
+            --client-id "${{ secrets.SF_CONSUMER_KEY }}" \
+            --jwt-key-file sf_server.key \
+            --username "${{ secrets.SF_USERNAME }}" \
+            --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
+            --alias "${{ inputs.environment }}" \
+            --set-default
+          rm -f sf_server.key
+
+      # ── 7. Run tests ───────────────────────────────────────────────────────
+      - name: Run Apex Tests
+        if: inputs.test_level != 'NoTestRun'
+        run: |
+          sf apex run test \
+            --target-org "${{ inputs.environment }}" \
+            --code-coverage \
+            --result-format human \
+            --wait 60 \
+            --test-level "${{ inputs.test_level }}"
+
+      # ── 8. Deploy delta ────────────────────────────────────────────────────
+      - name: Deploy Delta to ${{ inputs.environment }}
+        id: deploy
+        if: steps.delta.outputs.has_delta == 'true'
+        run: |
+          sf project deploy start \
+            --source-dir delta/package \
+            --target-org "${{ inputs.environment }}" \
+            --wait 60 \
+            --test-level "${{ inputs.test_level }}"
+          echo "deployed=true" >> $GITHUB_OUTPUT
+
+      - name: Skip — no delta changes
+        if: steps.delta.outputs.has_delta != 'true'
+        run: |
+          echo "No metadata changes detected between tags. Deployment skipped."
+          echo "deployed=false" >> $GITHUB_OUTPUT
+
+      # ── 9. Destructive changes (only when deploy succeeded) ────────────────
+      - name: Deploy Destructive Changes
+        if: steps.deploy.outputs.deployed == 'true'
+        run: |
+          DESTRUCTIVE="delta/destructiveChanges/destructiveChanges.xml"
+          if [ -f "$DESTRUCTIVE" ] && grep -q '<types>' "$DESTRUCTIVE"; then
+            echo "Deploying destructive changes..."
+            sf project deploy start \
+              --manifest "$DESTRUCTIVE" \
+              --post-destructive-changes "$DESTRUCTIVE" \
+              --target-org "${{ inputs.environment }}" \
+              --wait 30
+          else
+            echo "No destructive changes to deploy."
+          fi
+
+      # ── 10. Step summary ───────────────────────────────────────────────────
+      - name: Write Deployment Summary
+        if: always()
+        run: |
+          {
+            echo "## Deployment Summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| **Environment** | \`${{ inputs.environment }}\` |"
+            echo "| **Current Tag** | \`${{ inputs.current_tag }}\` |"
+            echo "| **Previous Tag** | \`${{ inputs.previous_tag || 'N/A (first deployment)' }}\` |"
+            echo "| **Test Level** | \`${{ inputs.test_level }}\` |"
+            echo "| **Status** | \`${{ job.status }}\` |"
+            echo "| **Triggered by** | \`${{ github.actor }}\` |"
+            echo "| **Run** | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
+            echo ""
+            if [ -f "delta/package/package.xml" ]; then
+              echo "### Deployed Components"
+              echo '```xml'
+              cat delta/package/package.xml
+              echo '```'
+            fi
+            if [ -f "delta/destructiveChanges/destructiveChanges.xml" ]; then
+              echo "### Destructive Changes"
+              echo '```xml'
+              cat delta/destructiveChanges/destructiveChanges.xml
+              echo '```'
+            fi
+          } >> $GITHUB_STEP_SUMMARY

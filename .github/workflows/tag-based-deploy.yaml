@@ -1,0 +1,95 @@
+name: Salesforce Tag-Based Delta Deployment
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggered by pushing a versioned release tag  (releases/X.Y.Z)
+# or manually via workflow_dispatch.
+#
+# This workflow only resolves the current/previous tags and the target
+# environment, then delegates all deployment logic to reusable-delta-deploy.yml.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    tags:
+      - 'releases/[1-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for deployment'
+        required: true
+        type: choice
+        options:
+          - production
+          - Staging
+          - UATInt
+          - DevInt
+      test_level:
+        description: 'Apex test level'
+        required: true
+        type: choice
+        default: 'RunRelevantTests'
+        options:
+          - NoTestRun
+          - RunLocalTests
+          - RunAllTestsInOrg
+          - RunRelevantTests
+      tag_name:
+        description: 'Tag to deploy (leave empty to use the tag that triggered this run)'
+        required: false
+        type: string
+
+jobs:
+  # ── Job 1: Resolve current and previous release tags ─────────────────────
+  resolve-tags:
+    if: startsWith(github.ref, 'refs/tags/releases/') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      current_tag:  ${{ steps.resolve.outputs.current_tag }}
+      previous_tag: ${{ steps.resolve.outputs.previous_tag }}
+      environment:  ${{ steps.resolve.outputs.environment }}
+      test_level:   ${{ steps.resolve.outputs.test_level }}
+    steps:
+      - name: Checkout (full history for tag lookup)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tags and environment
+        id: resolve
+        run: |
+          # ── Determine current tag ──
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            CURRENT_TAG="${{ github.event.inputs.tag_name }}"
+          else
+            CURRENT_TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
+          # ── Find previous tag in the same releases/* series ──
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 --match="releases/*" "${CURRENT_TAG}^" 2>/dev/null || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous releases/* tag found — treating as first deployment."
+          else
+            echo "Comparing $PREVIOUS_TAG → $CURRENT_TAG"
+          fi
+
+          echo "current_tag=$CURRENT_TAG"                                          >> $GITHUB_OUTPUT
+          echo "previous_tag=$PREVIOUS_TAG"                                        >> $GITHUB_OUTPUT
+          echo "environment=${{ github.event.inputs.environment || 'production' }}" >> $GITHUB_OUTPUT
+          echo "test_level=${{ github.event.inputs.test_level || 'RunLocalTests' }}" >> $GITHUB_OUTPUT
+
+  # ── Job 2: Delegate to the shared delta deploy workflow ───────────────────
+  deploy:
+    needs: resolve-tags
+    uses: ./.github/workflows/reusable-delta-deploy.yml
+    with:
+      environment:  ${{ needs.resolve-tags.outputs.environment }}
+      current_tag:  ${{ needs.resolve-tags.outputs.current_tag }}
+      previous_tag: ${{ needs.resolve-tags.outputs.previous_tag }}
+      test_level:   ${{ needs.resolve-tags.outputs.test_level }}
+    secrets:
+      SF_SERVER_KEY:   ${{ secrets.SF_SERVER_KEY }}
+      SF_CONSUMER_KEY: ${{ secrets.SF_CONSUMER_KEY }}
+      SF_USERNAME:     ${{ secrets.SF_USERNAME }}
+      SF_INSTANCE_URL: ${{ secrets.SF_INSTANCE_URL }}
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}

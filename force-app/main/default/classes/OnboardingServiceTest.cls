@@ -11,6 +11,7 @@ private class OnboardingServiceTest {
     // ── Test Data Helpers ────────────────────────────────────────────────
 
     public static String ADMIN_EMAIL = '{env.ADMIN_USER_EMAIL}';
+    public static String PROD_REPLACEMENT = '{env.PROD_REPLACEMENT}';
 
     private static Onboarding_Request__c makeRequest(String name, Integer daysFromNow) {
         return new Onboarding_Request__c(
