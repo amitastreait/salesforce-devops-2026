@@ -10,14 +10,50 @@ trigger:
 pool:
   vmImage: ubuntu-latest #windows-latest, macOS-latest
 
-jobs:
+stages:
+- stage: Validate
+  displayName: 'Validation Stage'
+  jobs:
   - job:
-    displayName: 'Simple Job'
+    displayName: 'Validation Job'
+    steps:
+      - checkout: self
+        fetchDepth: 0
+        displayName: Checkout
+
+      - script: npm install --global @salesforce/cli@latest
+        displayName: Install Salesforce CLI
+      
+      - script: sf --version
+        displayName: Verify Salesforce CLI Installation
+      
+      - script: |
+          echo 'y' | sf plugins install sfdx-git-delta
+          sf plugins install @salesforce/sfdx-scanner
+        displayName: Install required plugins
+    
+  - job:
     steps:
     - script: echo Hello, world!
       displayName: 'Run a one-line script'
+
+    - script: |
+        echo Add other tasks to build, test, and deploy your project.
+        echo See https://aka.ms/yaml
+      displayName: 'Run a multi-line script'
+- stage: Deploy
+  jobs:
   - job:
-    displayName: 'Simple Job'
+    displayName: 'Deploy Job'
     steps:
     - script: echo Hello, world!
       displayName: 'Run a one-line script'
+- stage: PostDeploy
+  jobs:
+  - job:
+    displayName: 'Post-Deploy Job'
+    steps:
+    - script: echo Hello, world!
+      displayName: 'Run a one-line script'
+
+
