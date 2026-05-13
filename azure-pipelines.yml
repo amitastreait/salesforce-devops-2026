@@ -1,0 +1,33 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- feature/azure-pipelines
+- main
+
+pool:
+  vmImage: ubuntu-latest #windows-latest, macOS-latest
+
+stages:
+- stage: ValidateDeploy
+  displayName: 'Validate & Deploy'
+  jobs:
+  - job:
+    displayName: 'Validate & Deploy Job'
+    steps:
+      - checkout: self
+        fetchDepth: 0
+        displayName: Checkout
+
+      - script: npm install --global @salesforce/cli@latest
+        displayName: Install Salesforce CLI
+      
+      - script: sf --version
+        displayName: Verify Salesforce CLI Installation
+      
+      - script: |
+          echo 'y' | sf plugins install sfdx-git-delta
+          sf plugins install @salesforce/sfdx-scanner
+        displayName: Install required plugins
