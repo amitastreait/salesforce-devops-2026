@@ -11,11 +11,11 @@ pool:
   vmImage: ubuntu-latest #windows-latest, macOS-latest
 
 stages:
-- stage: Validate
-  displayName: 'Validation Stage'
+- stage: ValidateDeploy
+  displayName: 'Validate & Deploy'
   jobs:
   - job:
-    displayName: 'Validation Job'
+    displayName: 'Validate & Deploy Job'
     steps:
       - checkout: self
         fetchDepth: 0
@@ -31,29 +31,3 @@ stages:
           echo 'y' | sf plugins install sfdx-git-delta
           sf plugins install @salesforce/sfdx-scanner
         displayName: Install required plugins
-    
-  - job:
-    steps:
-    - script: echo Hello, world!
-      displayName: 'Run a one-line script'
-
-    - script: |
-        echo Add other tasks to build, test, and deploy your project.
-        echo See https://aka.ms/yaml
-      displayName: 'Run a multi-line script'
-- stage: Deploy
-  jobs:
-  - job:
-    displayName: 'Deploy Job'
-    steps:
-    - script: echo Hello, world!
-      displayName: 'Run a one-line script'
-- stage: PostDeploy
-  jobs:
-  - job:
-    displayName: 'Post-Deploy Job'
-    steps:
-    - script: echo Hello, world!
-      displayName: 'Run a one-line script'
-
-
